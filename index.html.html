@@ -1,0 +1,569 @@
+<meta name="robots" content="noindex,nofollow">
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>沖ドキ考察｜GPT</title>
+<style>
+:root{--bg:#1a1a1a;--card:#2a2a2a;--text:#e0e0e0;--sub:#aaa;--border:#444;--big:#ff453a;--reg:#0a84ff}
+*{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}
+body{background:var(--bg);color:var(--text);padding:12px;max-width:760px;margin:0 auto}
+h1{text-align:center;font-size:1.25rem;color:#fff;margin:4px 0 12px}
+h2{font-size:1rem;color:#fff;margin-bottom:8px}
+p{line-height:1.5}
+.small{font-size:.75rem;color:var(--sub);line-height:1.5}
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:12px;box-shadow:0 2px 5px #0004}
+.chart-title{text-align:center;font-size:.85rem;color:var(--sub);margin-bottom:6px}
+canvas{display:block;width:100%;height:180px;background:#181818;border-radius:6px}
+.summary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.metric{background:#333;border:1px solid #444;border-radius:7px;padding:9px;text-align:center;min-width:0}
+.metric .label{display:block;font-size:.74rem;color:var(--sub);margin-bottom:3px}
+.metric .value{font-size:1.05rem;font-weight:700;color:#fff;overflow-wrap:anywhere}
+label{display:block;font-size:.8rem;font-weight:700;color:var(--sub);margin-bottom:4px}
+.form-group{margin-bottom:10px}
+select,input[type=number]{width:100%;padding:10px;border:1px solid var(--border);border-radius:6px;background:#333;color:#fff;font-size:1rem}
+.payout{display:flex;gap:10px}.payout .form-group{flex:1;min-width:0}
+.btns{display:flex;gap:8px;margin-top:8px}
+button{cursor:pointer}
+.bonus{flex:1;border:0;border-radius:8px;padding:13px;color:#fff;font-size:1.05rem;font-weight:bold}
+.big{background:var(--big)}.reg{background:var(--reg)}
+.actionbar{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px}
+.actions{display:flex;flex-wrap:wrap;gap:6px}
+.action{background:#444;color:#fff;border:1px solid #555;border-radius:5px;padding:7px 9px;font-size:.75rem}
+.danger{background:#6b2020;border-color:#a33}
+.tablewrap{overflow-x:auto;border:1px solid var(--border);border-radius:8px;background:var(--card)}
+table{width:100%;border-collapse:collapse;font-size:.77rem;text-align:center;white-space:nowrap}
+th,td{padding:8px 5px;border-bottom:1px solid #383838}
+th{background:#333;color:#aaa}
+tr.row-big{background:#3d1c1c}tr.row-reg{background:#1c2d3d}
+tr.row-sep{background:#ffe066;color:#111}tr.row-sep td{color:#111;font-weight:bold}
+.iconbtn{background:#383838;border:1px solid #555;color:#fff;border-radius:4px;width:25px;height:25px;margin:0 1px}
+.del{color:#ff8a80;border-color:#a33}
+.cut-mark{display:inline-block;margin:2px 1px 0;padding:2px 5px;border-radius:4px;font-size:.65rem;font-weight:700;white-space:normal;line-height:1.35}
+.cut-mark.game{background:#ffca66;color:#241900}
+.cut-mark.diff{background:#ff453a;color:#fff}
+.cut-marks{display:flex;flex-wrap:wrap;justify-content:center;gap:2px;margin-top:3px}
+.notice{background:#242424;border-left:3px solid #e0b341;padding:9px;border-radius:4px;font-size:.78rem;line-height:1.55;margin-top:8px}
+.status{font-weight:700}.good{color:#7bd88f}.warn{color:#ffca66}.bad{color:#ff7b72}
+.bartrack{height:10px;background:#444;border-radius:6px;overflow:hidden;margin:6px 0}
+.barfill{height:100%;background:#0a84ff;width:0%;transition:width .2s}
+.reggrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.regbox{background:#333;border-radius:7px;padding:9px}
+.regbox strong{display:block;color:#fff;margin-bottom:4px}
+.empty{text-align:center;color:var(--sub);padding:18px}
+.setting-inputs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.setting-note{font-size:.75rem;color:var(--sub);line-height:1.55}.setting-result{background:#333;border:1px solid #444;border-radius:8px;padding:10px;margin:8px 0}.setting-result strong{color:#fff}.setting-row{display:grid;grid-template-columns:52px 1fr 52px;align-items:center;gap:8px;margin:8px 0;font-size:.8rem}.setting-row .bartrack{margin:0}.setting-row .barfill{background:#0a84ff}.setting-toggle{display:flex;align-items:flex-start;gap:7px;font-size:.8rem;color:var(--text);margin:8px 0}.setting-toggle input{margin-top:3px;accent-color:#0a84ff}
+.keypad{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:7px;max-width:440px}
+.keypad button{min-height:48px;border:1px solid #554936;border-radius:8px;background:#f6e8d4;color:#252525;font-size:1.25rem;font-weight:600;touch-action:manipulation}
+.keypad button:active{background:#e8cda9;transform:scale(.98)}
+.keypad .key-func{font-size:1rem;background:#d9d9d9}
+#game-input{font-size:1.15rem;font-weight:700}
+.row-sep td{position:relative}
+.sep-grip{display:inline-flex;align-items:center;gap:7px;padding:9px 12px;border:1px solid #8b741d;border-radius:7px;background:#f5d65c;color:#241d00;font-weight:700;touch-action:none;user-select:none;-webkit-user-select:none;cursor:grab}
+.sep-grip:active{cursor:grabbing}
+tr.dragging-sep{opacity:.35;outline:2px dashed #fff}
+tr.drop-before td{box-shadow:inset 0 3px #00d4ff}
+tr.drop-after td{box-shadow:inset 0 -3px #00d4ff}
+.drag-hint{font-size:.7rem;color:#5b4a0b;margin-left:5px}
+@media(max-width:420px){.keypad button{min-height:50px;font-size:1.3rem}}
+@media(max-width:420px){body{padding:8px}.card{padding:10px}.metric .value{font-size:.95rem}.reggrid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<h1>沖ドキ考察｜GPT</h1>
+
+<div class="card">
+  <h2>機種・獲得枚数設定</h2>
+  <div class="form-group">
+    <label for="model-select">新しく追加する履歴の機種</label>
+    <select id="model-select" onchange="onModelChange()">
+      <option value="gold">沖ドキ！GOLD（BIG +69G / REG +29G）</option>
+      <option value="black">沖ドキ！BLACK（BIG +59G / REG +24G）</option>
+      <option value="gorgeous">沖ドキ！GORGEOUS（BIG +59G / REG +24G）</option>
+    </select>
+  </div>
+  <div class="payout">
+    <div class="form-group"><label for="big-payout">BIG獲得枚数（推定値）</label><input id="big-payout" type="number" value="210" step="0.1"></div>
+    <div class="form-group"><label for="reg-payout">REG獲得枚数（推定値）</label><input id="reg-payout" type="number" value="100" step="0.1"></div>
+  </div>
+  <div class="form-group"><label for="game-input">初当たりG数（前回ボーナス後のG数）</label><input id="game-input" type="number" min="0" placeholder="例：125" inputmode="numeric" oninput="suggestInitialHit()"></div>
+  <div class="keypad" aria-label="初当たりG数 数字入力パッド">
+    <button type="button" onclick="keypadInput('1')">1</button><button type="button" onclick="keypadInput('2')">2</button><button type="button" onclick="keypadInput('3')">3</button>
+    <button type="button" onclick="keypadInput('4')">4</button><button type="button" onclick="keypadInput('5')">5</button><button type="button" onclick="keypadInput('6')">6</button>
+    <button type="button" onclick="keypadInput('7')">7</button><button type="button" onclick="keypadInput('8')">8</button><button type="button" onclick="keypadInput('9')">9</button>
+    <button type="button" class="key-func" onclick="keypadClear()">消去</button><button type="button" onclick="keypadInput('0')">0</button><button type="button" class="key-func" onclick="keypadBackspace()">⌫</button>
+  </div>
+  <label class="setting-toggle"><input id="is-initial-hit" type="checkbox" checked>このボーナスを設定判別用の初当たりとして集計する</label>
+  <p id="initial-hit-hint" class="small" style="margin-top:5px">32G以内のボーナスは連チャン扱いとして、設定判別の初当たりから自動除外します。</p>
+  <div class="btns"><button class="bonus big" onclick="addHistory('BIG')">BIG</button><button class="bonus reg" onclick="addHistory('REG')">REG</button></div>
+  <p class="small" style="margin-top:8px">機種ごとの獲得枚数は推定用の初期値です。実際の獲得枚数に合わせて編集できます。設定は追加時の履歴に保存されます。</p>
+</div>
+
+<div class="actionbar">
+  <strong>ボーナス履歴</strong>
+  <div class="actions">
+    <button class="action" onclick="addSeparator()">区切り線追加</button>
+    <button class="action danger" onclick="resetAll()">全リセット</button>
+  </div>
+</div>
+<div class="tablewrap">
+<table>
+<thead><tr><th>#</th><th>機種</th><th>初当たりG</th><th>累計初当たりG</th><th>区間加算後G</th><th>推定差枚</th><th>推定機械割</th><th>設定判別</th><th>操作</th></tr></thead>
+<tbody id="history-list"></tbody>
+</table>
+<div id="empty-message" class="empty">履歴がありません</div>
+</div>
+
+<div class="card">
+  <h2>全体の出玉推移</h2>
+  <div class="chart-title">推定差枚数（縦軸：500枚刻み／横軸：累計G数・500G刻み）</div>
+  <canvas id="overall-chart"></canvas>
+  <div class="summary" style="margin-top:8px">
+    <div class="metric"><span class="label">累計初当たりG</span><span class="value" id="sum-total-g">0 G</span></div>
+    <div class="metric"><span class="label">累計ボーナス加算G</span><span class="value" id="sum-add-g">0 G</span></div>
+    <div class="metric"><span class="label">推定累計差枚</span><span class="value" id="sum-diff">0 枚</span></div>
+    <div class="metric"><span class="label">推定機械割</span><span class="value" id="sum-rate">—</span></div>
+  </div>
+</div>
+
+<div class="card" id="setting-analysis-card">
+  <h2>設定判別（初当たり＋チェリーB）</h2>
+  <p class="setting-note">対象機種は上の「新しく追加する履歴の機種」と連動します。設定判別にはチェックを付けた初当たり履歴だけを使います。連チャン中のボーナスは追加時にチェックを外すか、履歴表の「設定判別」欄でチェックを外してください。過去の履歴も表から切り替えできます。</p>
+  <div class="setting-inputs" style="margin-top:10px">
+    <div class="form-group"><label for="cherry-b-count">チェリーB回数（手入力）</label><input id="cherry-b-count" type="number" min="0" step="1" value="0" oninput="saveCherryInputs()"></div>
+    <div class="form-group"><label for="cherry-b-games">チェリーBを数えたゲーム数</label><input id="cherry-b-games" type="number" min="0" step="1" value="0" oninput="saveCherryInputs()"></div>
+  </div>
+  <p class="setting-note">チェリーB回数と、その回数を数えた総ゲーム数を入力してください。設定判別用の初当たりゲーム数とは別に管理します。</p>
+  <div id="setting-results"><p class="empty">初当たり履歴またはチェリーBのカウントを入力すると、設定推測を表示します。</p></div>
+  <p class="notice">推定設定は、提示された設定1・2・3・5・6の数値を等しい事前確率として比較した参考値です。設定4はデータがないため対象外です。試行回数が少ない場合や、初当たりの数え方・チェリーBのカウント対象ゲームが不正確な場合は推定が大きくブレます。BB・RBの公表確率は連チャンを含むため、初当たりだけの設定推測には直接混ぜていません。</p>
+</div>
+
+
+
+<div class="card">
+  <h2>有利区間ゲーム数の目安</h2>
+  <div class="reggrid">
+    <div class="regbox"><strong>GOLD / BLACK</strong><span>上限目安：4,000G</span><div class="bartrack"><div class="barfill" id="interval-bar-4000"></div></div><span id="interval-text-4000" class="small">区間加算後G：0 / 4,000G</span></div>
+    <div class="regbox"><strong>GORGEOUS</strong><span>上限目安：6,000G</span><div class="bartrack"><div class="barfill" id="interval-bar-6000"></div></div><span id="interval-text-6000" class="small">区間加算後G：0 / 6,000G</span></div>
+  </div>
+  <p class="notice">このメーターは、履歴の「区切り線」から数えた初当たりG＋ボーナス加算Gによる参考値です。実機の有利区間ゲーム数・リセットを自動検知するものではありません。異なる機種を同じ履歴に混在させた場合は、機種ごとの表示が参考値になります。</p>
+</div>
+
+<div class="card">
+  <h2>有利区間・差枚数切断の自動推定</h2>
+  <div id="cut-analysis"><p class="empty">履歴を入力すると参考判定を表示します。</p></div>
+  <p class="notice">自動推定は実機の内部状態を確認するものではありません。手動の区切り線ごとに履歴から推定したゲーム数・差枚数を使い、切断候補を参考表示します。内部差枚数やモード、ボーナス中の正確な差枚推移は履歴だけでは再現できないため、確定判定には使用しないでください。</p>
+</div>
+
+<div class="card">
+  <h2>有利区間ごとの出玉推移</h2>
+  <p class="small" style="margin-bottom:8px">「区切り線追加」を押すと、その位置から次の区間として推定差枚を0枚から集計します。</p>
+  <div id="interval-charts"><p class="empty">履歴を入力すると区間別グラフが表示されます。</p></div>
+</div>
+
+<div class="card">
+  <h2>6号機規制メモ</h2>
+  <div class="reggrid">
+    <div class="regbox"><strong>短期出玉率試験（400G）</strong>下限 33.3%超 / 上限 220%未満</div>
+    <div class="regbox"><strong>中期出玉率試験（1,600G）</strong>下限 40%超 / 上限 150%未満</div>
+    <div class="regbox"><strong>長期出玉率試験（6,000G）</strong>下限 50%超 / 上限 126%未満</div>
+    <div class="regbox"><strong>超長期出玉率試験（17,500G）</strong>下限 60%超 / 上限 115%未満</div>
+  </div>
+  <p class="notice">この規制メモは試験基準の参考表示です。履歴から算出する「推定機械割」は、実機の出玉率試験と同じ計測方法ではないため、適合・不適合や規制到達を判定できません。</p>
+  <p class="small" style="margin-top:8px">有利区間の上限表示：GOLD / BLACK は4,000G、GORGEOUS は6,000Gを目安として表示。コンプリート機能（差枚数による作動）は実際の台の総差枚や状態が必要なため、この履歴だけでは自動判定しません。</p>
+</div>
+
+
+<script>
+const MODEL_CONFIG={
+  gold:{name:'ゴールド',bigAdd:69,regAdd:29,defaultBig:210,defaultReg:87.5,limit:4000},
+  black:{name:'ブラック',bigAdd:59,regAdd:24,defaultBig:210,defaultReg:87.5,limit:4000},
+  gorgeous:{name:'ゴージャス',bigAdd:59,regAdd:24,defaultBig:210,defaultReg:87.5,limit:6000}
+};
+const ORIGINAL_COST_PER_INITIAL_G=1.5625;
+const STORAGE_KEY='okidoki_考察_histories';
+const CHERRY_STORAGE_KEY='okidoki_考察_cherryB_counts';
+const SETTING_DATA={
+  gold:{initial:[299.6,287.3,266.7,247.6,237.0],cherryB:[168.0,152.4,145.6,136.5,128.0]},
+  black:{initial:[288.7,277.9,265.8,254.1,243.1],cherryB:[168.0,152.4,145.6,136.5,128.5]},
+  gorgeous:{initial:[288.7,278.4,267.2,256.5,246.4],cherryB:[168.0,152.4,145.6,136.5,128.5]}
+};
+const SETTING_NUMBERS=[1,2,3,5,6];
+let histories=[];
+let cherryCounters={gold:{count:0,games:0},black:{count:0,games:0},gorgeous:{count:0,games:0}};
+
+window.addEventListener('load',()=>{
+  try{const saved=localStorage.getItem(STORAGE_KEY);if(saved)histories=JSON.parse(saved)||[];}catch(e){histories=[];}
+  try{const savedCherry=localStorage.getItem(CHERRY_STORAGE_KEY);if(savedCherry)cherryCounters={...cherryCounters,...JSON.parse(savedCherry)};}catch(e){}
+  onModelChange();render();
+});
+window.addEventListener('resize',()=>renderCharts());
+
+function onModelChange(){
+  const config=MODEL_CONFIG[document.getElementById('model-select').value];
+  document.getElementById('big-payout').value=config.defaultBig;
+  document.getElementById('reg-payout').value=config.defaultReg;
+  loadCherryInputs();
+  renderSettingAnalysis();
+}
+function saveLocal(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(histories));}catch(e){alert('このブラウザでは履歴を保存できませんでした。');}}
+function loadCherryInputs(){
+  const key=document.getElementById('model-select').value,values=cherryCounters[key]||{count:0,games:0};
+  document.getElementById('cherry-b-count').value=values.count||0;
+  document.getElementById('cherry-b-games').value=values.games||0;
+}
+function saveCherryInputs(){
+  const key=document.getElementById('model-select').value;
+  const count=Math.max(0,Math.floor(Number(document.getElementById('cherry-b-count').value)||0));
+  const games=Math.max(0,Math.floor(Number(document.getElementById('cherry-b-games').value)||0));
+  cherryCounters[key]={count,games};
+  try{localStorage.setItem(CHERRY_STORAGE_KEY,JSON.stringify(cherryCounters));}catch(e){}
+  renderSettingAnalysis();
+}
+function fmt(n){return (Math.round(n*10)/10).toLocaleString('ja-JP');}
+function isBonus(item){return item.type==='bonus';}
+function totalInitialG(items=histories){return items.filter(isBonus).reduce((s,x)=>s+(Number(x.initialG)||0),0);}
+function totalAddG(items=histories){return items.filter(isBonus).reduce((s,x)=>s+(Number(x.addG)||0),0);}
+function totalPayout(items=histories){return items.filter(isBonus).reduce((s,x)=>s+(Number(x.payout)||0),0);}
+function originalInCost(item){return (Number(item.initialG)||0)*ORIGINAL_COST_PER_INITIAL_G;}
+function itemDiff(item){return (Number(item.payout)||0)-originalInCost(item);}
+
+function keypadInput(digit){
+  const input=document.getElementById('game-input');
+  const current=String(input.value||'');
+  input.value=(current==='0'?'':current)+digit;
+  suggestInitialHit();
+}
+function keypadBackspace(){
+  const input=document.getElementById('game-input');
+  input.value=String(input.value||'').slice(0,-1);
+  suggestInitialHit();
+}
+function keypadClear(){
+  const input=document.getElementById('game-input');input.value='';suggestInitialHit();
+}
+
+function suggestInitialHit(){
+  const input=document.getElementById('game-input');
+  const g=parseInt(input.value,10);
+  const checkbox=document.getElementById('is-initial-hit');
+  const hint=document.getElementById('initial-hit-hint');
+  if(!Number.isFinite(g)){checkbox.checked=true;hint.textContent='32G以内のボーナスは連チャン扱いとして、設定判別の初当たりから自動除外します。';return;}
+  const isChain=g<=32;
+  checkbox.checked=!isChain;
+  hint.textContent=isChain?'32G以内のため連チャン扱いです。設定判別の初当たりには自動で含めません。':'33G以上のため初当たり候補として集計します。';
+}
+function isSettingInitialHit(item){return Number(item.initialG)>32&&item.isInitialHit!==false;}
+function addHistory(type){
+  const input=document.getElementById('game-input'),g=parseInt(input.value,10);
+  if(!Number.isFinite(g)||g<0){alert('0以上の初当たりG数を入力してください。');return;}
+  const key=document.getElementById('model-select').value,config=MODEL_CONFIG[key];
+  const big=parseFloat(document.getElementById('big-payout').value),reg=parseFloat(document.getElementById('reg-payout').value);
+  const payout=type==='BIG'?big:reg;
+  if(!Number.isFinite(payout)||payout<0){alert('獲得枚数を0以上で入力してください。');return;}
+  histories.push({id:Date.now()+Math.random(),type:'bonus',modelKey:key,modelName:config.name,bonusType:type,initialG:g,addG:type==='BIG'?config.bigAdd:config.regAdd,payout,isInitialHit:g>32&&document.getElementById('is-initial-hit').checked});
+  saveLocal();render();input.value='';document.getElementById('is-initial-hit').checked=true;document.getElementById('initial-hit-hint').textContent='32G以内のボーナスは連チャン扱いとして、設定判別の初当たりから自動除外します。';
+}
+function addSeparator(){
+  const count=histories.filter(x=>x.type==='separator').length+1;
+  histories.push({id:Date.now()+Math.random(),type:'separator',name:`区切り線 ${count}`});
+  saveLocal();render();
+}
+function moveItem(index,dir){
+  const target=index+dir;if(target<0||target>=histories.length)return;
+  [histories[index],histories[target]]=[histories[target],histories[index]];
+  saveLocal();render();
+}
+let separatorPressTimer=null,dragSeparatorId=null,dragSourceRow=null,dragTargetIndex=null,dragTargetAfter=false;
+function clearDropMarks(){document.querySelectorAll('tr.drop-before,tr.drop-after').forEach(row=>row.classList.remove('drop-before','drop-after'));}
+function beginSeparatorDrag(id,handle){
+  dragSeparatorId=id;dragSourceRow=handle.closest('tr');dragSourceRow?.classList.add('dragging-sep');
+  document.body.style.userSelect='none';document.body.style.webkitUserSelect='none';
+}
+function updateSeparatorDrag(x,y){
+  if(dragSeparatorId===null)return;
+  clearDropMarks();
+  const target=document.elementFromPoint(x,y)?.closest('tr[data-index]');
+  if(!target||target===dragSourceRow){dragTargetIndex=null;return;}
+  const rect=target.getBoundingClientRect();dragTargetAfter=y>rect.top+rect.height/2;
+  dragTargetIndex=Number(target.dataset.index);target.classList.add(dragTargetAfter?'drop-after':'drop-before');
+}
+function finishSeparatorDrag(){
+  if(dragSeparatorId===null)return;
+  const from=histories.findIndex(x=>x.id===dragSeparatorId);
+  if(from>=0&&dragTargetIndex!==null){
+    const [item]=histories.splice(from,1);
+    let to=dragTargetIndex+(dragTargetAfter?1:0);if(from<to)to--;
+    to=Math.max(0,Math.min(histories.length,to));histories.splice(to,0,item);saveLocal();
+  }
+  dragSourceRow?.classList.remove('dragging-sep');clearDropMarks();
+  document.body.style.userSelect='';document.body.style.webkitUserSelect='';
+  dragSeparatorId=null;dragSourceRow=null;dragTargetIndex=null;render();
+}
+document.addEventListener('pointerdown',event=>{
+  const handle=event.target.closest('.sep-grip');if(!handle)return;
+  const id=Number(handle.dataset.separatorId);
+  separatorPressTimer=setTimeout(()=>{separatorPressTimer=null;beginSeparatorDrag(id,handle);},360);
+});
+document.addEventListener('pointermove',event=>{
+  if(separatorPressTimer!==null&&Math.abs(event.movementX)+Math.abs(event.movementY)>12){clearTimeout(separatorPressTimer);separatorPressTimer=null;}
+  if(dragSeparatorId!==null){event.preventDefault();updateSeparatorDrag(event.clientX,event.clientY);}
+},{passive:false});
+document.addEventListener('pointerup',()=>{if(separatorPressTimer!==null){clearTimeout(separatorPressTimer);separatorPressTimer=null;}if(dragSeparatorId!==null)finishSeparatorDrag();});
+document.addEventListener('pointercancel',()=>{if(separatorPressTimer!==null){clearTimeout(separatorPressTimer);separatorPressTimer=null;}if(dragSeparatorId!==null)finishSeparatorDrag();});
+
+function deleteHistory(id){histories=histories.filter(x=>x.id!==id);saveLocal();render();}
+function setInitialHit(index,checked){if(!histories[index]||!isBonus(histories[index]))return;histories[index].isInitialHit=Boolean(checked);saveLocal();render();}
+function resetAll(){if(confirm('すべての履歴とチェリーBカウントを消去しますか？')){histories=[];cherryCounters={gold:{count:0,games:0},black:{count:0,games:0},gorgeous:{count:0,games:0}};try{localStorage.setItem(CHERRY_STORAGE_KEY,JSON.stringify(cherryCounters));}catch(e){};saveLocal();loadCherryInputs();render();}}
+function buildSections(){
+  const sections=[];let section={index:1,items:[],g:0,addG:0,diff:0,data:[0],games:[0],modelKeys:new Set()};
+  histories.forEach(item=>{
+    if(item.type==='separator'){
+      if(section.items.length)sections.push(section);
+      section={index:sections.length+1,items:[],g:0,addG:0,diff:0,data:[0],games:[0],modelKeys:new Set()};
+    }else{
+      section.items.push(item);section.g+=Number(item.initialG)||0;section.addG+=Number(item.addG)||0;
+      section.diff+=itemDiff(item);section.data.push(section.diff);section.games.push(section.g+section.addG);section.modelKeys.add(item.modelKey||'unknown');
+    }
+  });
+  if(section.items.length)sections.push(section);
+  return sections;
+}
+
+function render(){
+  const tbody=document.getElementById('history-list');tbody.innerHTML='';
+  const empty=document.getElementById('empty-message');empty.style.display=histories.length?'none':'block';
+  let cumActiveG=0,cumDiffCoins=0,bonusCount=0,sectionG=0,sectionAddG=0;
+  const overallData=[0],overallGames=[0],sections=buildSections();
+  const cutMarks=getCutMarks(sections);
+  histories.forEach((item,index)=>{
+    const tr=document.createElement('tr');
+    tr.dataset.index=index;
+    const controls=item.type==='separator'?`<button class="iconbtn del" onclick="deleteHistory(${Number(item.id)})" aria-label="区切り線を削除">✕</button>`:`<button class="iconbtn" onclick="moveItem(${index},-1)" ${index===0?'disabled':''}>▲</button><button class="iconbtn" onclick="moveItem(${index},1)" ${index===histories.length-1?'disabled':''}>▼</button><button class="iconbtn del" onclick="deleteHistory(${Number(item.id)})">✕</button>`;
+    if(item.type==='separator'){
+      sectionG=0;sectionAddG=0;
+      tr.className='row-sep';tr.innerHTML=`<td colspan="8"><button type="button" class="sep-grip" data-separator-id="${Number(item.id)}" aria-label="区切り線を長押しして移動">⠿ ${escapeHtml(item.name||'区切り線')} <span class="drag-hint">長押しで自由移動</span></button></td><td>${controls}</td>`;
+    }else{
+      bonusCount++;cumActiveG+=(Number(item.initialG)||0)+(Number(item.addG)||0);sectionG+=Number(item.initialG)||0;sectionAddG+=(Number(item.addG)||0);
+      cumDiffCoins+=itemDiff(item);overallData.push(cumDiffCoins);overallGames.push(cumActiveG);
+      const totalIn=cumActiveG*3,totalOut=totalIn+cumDiffCoins;
+      const rate=totalIn>0?(totalOut/totalIn)*100:null;
+      const intervalGameEstimate=sectionG+sectionAddG;
+      tr.className=item.bonusType==='BIG'?'row-big':'row-reg';
+      const d=cumDiffCoins>=0?'+'+fmt(cumDiffCoins):fmt(cumDiffCoins);
+      const marks=cutMarks.get(item.id)||[];
+      const marksHtml=marks.length?`<div class="cut-marks">${marks.map(m=>`<span class="cut-mark ${m.kind}" title="${escapeHtml(m.title)}">${m.kind==='diff'?'⚡差枚数切断':'🌀切断候補'}</span>`).join('')}</div>`:'';
+      tr.innerHTML=`<td>${bonusCount}</td><td>${escapeHtml(item.modelName||'')}</td><td>${fmt(item.initialG)}G${marksHtml}</td><td>${fmt(cumActiveG)}G</td><td>${fmt(intervalGameEstimate)}G</td><td style="color:${cumDiffCoins>=0?'#ff7b72':'#75bfff'}">${d}</td><td>${rate===null?'—':rate.toFixed(1)+'%'}</td><td><input aria-label="${bonusCount}回目を設定判別に含める" type="checkbox" ${isSettingInitialHit(item)?'checked':''} ${Number(item.initialG)<=32?'disabled title="32G以内のため連チャン扱いで自動除外"':''} onchange="setInitialHit(${index},this.checked)" style="accent-color:#0a84ff;width:18px;height:18px"></td><td>${controls}</td>`;
+    }
+    tbody.appendChild(tr);
+  });
+  const allInitialG=totalInitialG(),allAddG=totalAddG(),allPayout=totalPayout();
+  const allActiveG=allInitialG+allAddG;
+  const allDiff=histories.filter(isBonus).reduce((sum,item)=>sum+itemDiff(item),0);
+  const totalIn=allActiveG*3,totalOut=totalIn+allDiff;
+  const allRate=totalIn>0?(totalOut/totalIn)*100:null;
+  document.getElementById('sum-total-g').textContent=fmt(allInitialG)+' G';
+  document.getElementById('sum-add-g').textContent=fmt(allAddG)+' G';
+  document.getElementById('sum-diff').textContent=(allDiff>0?'+':'')+fmt(allDiff)+' 枚';
+  document.getElementById('sum-diff').style.color=allDiff>0?'#ff7b72':allDiff<0?'#75bfff':'#fff';
+  document.getElementById('sum-rate').textContent=allRate===null?'—':allRate.toFixed(1)+'%';
+  updateRegMeters(sections);
+  renderCutAnalysis(sections);
+  renderSettingAnalysis();
+  renderCharts(overallData,sections,overallGames);
+}
+function renderSettingAnalysis(){
+  const holder=document.getElementById('setting-results');
+  if(!holder)return;
+  const key=document.getElementById('model-select')?.value||'gold';
+  const config=MODEL_CONFIG[key],data=SETTING_DATA[key];
+  const selected=histories.filter(item=>isBonus(item)&&(item.modelKey||'gold')===key&&isSettingInitialHit(item));
+  const totalG=selected.reduce((sum,item)=>sum+(Number(item.initialG)||0),0);
+  const bigCount=selected.filter(item=>item.bonusType==='BIG').length;
+  const regCount=selected.filter(item=>item.bonusType==='REG').length;
+  const hitCount=selected.length;
+  const bigRate=bigCount>0&&totalG>0?totalG/bigCount:null;
+  const regRate=regCount>0&&totalG>0?totalG/regCount:null;
+  const cherryCount=Math.max(0,Math.floor(Number(document.getElementById('cherry-b-count')?.value)||0));
+  const cherryGames=Math.max(0,Math.floor(Number(document.getElementById('cherry-b-games')?.value)||0));
+  const cherryValid=cherryGames>0&&cherryCount<=cherryGames;
+  const hasHitData=hitCount>0&&totalG>0;
+  if(!hasHitData&&!cherryValid){
+    holder.innerHTML='<p class="empty">初当たり履歴または有効なチェリーBカウントを入力すると、設定推測を表示します。</p>';
+    return;
+  }
+  const rows=SETTING_NUMBERS.map((setting,i)=>{
+    let logL=0;
+    if(hasHitData){const rate=1/data.initial[i];logL+=hitCount*Math.log(rate)-totalG*rate;}
+    if(cherryValid){const p=1/data.cherryB[i];logL+=cherryCount*Math.log(p)+(cherryGames-cherryCount)*Math.log(1-p);}
+    return {setting,logL};
+  });
+  const maxLog=Math.max(...rows.map(r=>r.logL));
+  const weights=rows.map(r=>Math.exp(r.logL-maxLog));
+  const sumWeights=weights.reduce((a,b)=>a+b,0)||1;
+  rows.forEach((r,i)=>r.posterior=weights[i]/sumWeights*100);
+  rows.sort((a,b)=>b.posterior-a.posterior);
+  const best=rows[0];
+  const cherryObserved=cherryGames>0?cherryGames/(cherryCount||Infinity):null;
+  const invalidCherry=cherryGames>0&&cherryCount>cherryGames;
+  const modeText=hasHitData&&cherryValid?'初当たり＋チェリーB':hasHitData?'初当たり確率のみ':'チェリーBのみ';
+  let html=`<div class="setting-result"><div class="small">対象：沖ドキ！${config.name} ／ 判別材料：${modeText}</div><p style="font-size:1.05rem;margin-top:5px"><strong>推定設定：${best.setting}</strong>（相対推定 ${best.posterior.toFixed(1)}%）</p><p class="setting-note">初当たり集計：${hitCount}回（BIG ${bigCount}回・REG ${regCount}回）／初当たりG合計 ${fmt(totalG)}G</p></div>`;
+  html+=`<div class="reggrid"><div class="regbox"><strong>初当たりBIG確率（実績）</strong>${bigRate!==null?'1/'+bigRate.toFixed(1):'—'}<p class="setting-note">BIG初当たり ${bigCount}回</p></div><div class="regbox"><strong>初当たりREG確率（実績）</strong>${regRate!==null?'1/'+regRate.toFixed(1):'—'}<p class="setting-note">REG初当たり ${regCount}回</p></div></div>`;
+  if(cherryGames>0){
+    if(invalidCherry) html+='<p class="setting-note bad" style="margin-top:8px">入力エラー：チェリーB回数がカウント対象ゲーム数を超えています。チェリーBは推定に使用していません。</p>';
+    else html+=`<p class="setting-note" style="margin-top:8px">チェリーB実績：${cherryCount}/${cherryGames.toLocaleString('ja-JP')}G（1/${(cherryGames/(cherryCount||Infinity)).toFixed(1)}）</p>`;
+  }
+  html+='<p class="setting-note" style="margin:10px 0 5px">設定ごとの相対推定</p>';
+  rows.sort((a,b)=>a.setting-b.setting).forEach(r=>{
+    html+=`<div class="setting-row"><strong>設定${r.setting}</strong><div class="bartrack"><div class="barfill" style="width:${r.posterior.toFixed(3)}%"></div></div><span style="text-align:right">${r.posterior.toFixed(1)}%</span></div>`;
+  });
+  html+='<p class="setting-note">※表示％は入力した材料と今回の設定候補内で計算した相対値で、実際の設定が当たる確率を保証するものではありません。</p>';
+  holder.innerHTML=html;
+}
+
+function getCutMarks(sections){
+  const marks=new Map();
+  sections.forEach(sec=>{
+    let games=0,diff=0;
+    sec.items.forEach(item=>{
+      const prevGames=games,prevDiff=diff;
+      games+=(Number(item.initialG)||0)+(Number(item.addG)||0);
+      diff+=itemDiff(item);
+      const key=item.modelKey||'unknown';
+      let thresholds=[];
+      if(key==='gold') thresholds=[1600,2000];
+      else if(key==='black') thresholds=[2000,2600,3000,3600,4000];
+      else if(key==='gorgeous') thresholds=[2600,3000,3600,4000];
+      const itemMarks=[];
+      thresholds.forEach(t=>{
+        if(prevGames<t&&games>=t){
+          itemMarks.push({kind:'game',title:`${key.toUpperCase()}：${t.toLocaleString('ja-JP')}G付近の有利区間切断候補`});
+        }
+      });
+      if(prevDiff<2098&&diff>=2098){
+        itemMarks.push({kind:'diff',title:`区間推定差枚が＋2,098枚に到達。＋2,098〜＋2,250枚帯の差枚数切断候補（現在 ${fmt(diff)}枚）`});
+      }
+      if(itemMarks.length) marks.set(item.id,itemMarks);
+    });
+  });
+  return marks;
+}
+
+function updateRegMeters(sections){
+  const current=sections.length?sections[sections.length-1]:{g:0,addG:0,items:[]};
+  const currentGames=current.g+current.addG;
+  [[4000,'4000'],[6000,'6000']].forEach(([limit,id])=>{
+    const pct=Math.min(100,currentGames/limit*100);
+    document.getElementById('interval-bar-'+id).style.width=pct+'%';
+    const bar=document.getElementById('interval-bar-'+id);
+    bar.style.background=pct>=100?'#ff453a':pct>=80?'#ffca66':'#0a84ff';
+    document.getElementById('interval-text-'+id).textContent=`現在の手動区間：${fmt(currentGames)} / ${limit.toLocaleString()}G（${pct.toFixed(1)}%）`;
+  });
+}
+function renderCharts(overallData,sections,overallGames){
+  if(!overallData){
+    let diff=0,games=0;overallData=[0];overallGames=[0];
+    histories.forEach(x=>{if(isBonus(x)){diff+=itemDiff(x);games+=(Number(x.initialG)||0)+(Number(x.addG)||0);overallData.push(diff);overallGames.push(games);}});
+    sections=buildSections();
+  }
+  drawChart(document.getElementById('overall-chart'),overallData,overallGames||[0],'全体');
+  const holder=document.getElementById('interval-charts');
+  if(!sections||!sections.length){holder.innerHTML='<p class="empty">履歴を入力すると区間別グラフが表示されます。</p>';return;}
+  holder.innerHTML='';
+  sections.forEach(sec=>{
+    const card=document.createElement('div');card.className='card';card.style.margin='0 0 10px';card.style.padding='9px';
+    const modelNames=[...sec.modelKeys].map(k=>MODEL_CONFIG[k]?.name||k).join('・');
+    const canvas=document.createElement('canvas');canvas.style.height='160px';
+    const title=document.createElement('div');title.className='chart-title';
+    title.textContent=`区間 ${sec.index}｜${modelNames}｜初当たりG ${fmt(sec.g)}G＋加算G ${fmt(sec.addG)}G＝目安 ${fmt(sec.g+sec.addG)}G`;
+    const stats=document.createElement('p');stats.className='small';
+    stats.textContent=`区間内の推定差枚：${sec.diff>0?'+':''}${fmt(sec.diff)}枚 ／ ボーナス回数：${sec.items.length}`;
+    card.append(title,canvas,stats);holder.appendChild(card);
+    drawChart(canvas,sec.data,sec.games,`区間${sec.index}`);
+  });
+}
+function drawChart(canvas,data,gamePoints,label){
+  const width=Math.max(280,canvas.clientWidth||320),height=canvas.clientHeight||180,dpr=window.devicePixelRatio||1;
+  canvas.width=width*dpr;canvas.height=height*dpr;
+  const ctx=canvas.getContext('2d');ctx.scale(dpr,dpr);ctx.clearRect(0,0,width,height);
+  if(data.length<=1){ctx.fillStyle='#666';ctx.font='12px sans-serif';ctx.textAlign='center';ctx.fillText('履歴を入力するとグラフが表示されます',width/2,height/2);return;}
+  const rawMin=Math.min(0,...data),rawMax=Math.max(0,...data);
+  let min=Math.floor((rawMin-250)/500)*500,max=Math.ceil((rawMax+250)/500)*500;if(min===max){min-=500;max+=500;}
+  const left=48,right=12,top=15,bottom=30,gw=width-left-right,gh=height-top-bottom,range=max-min;
+  const maxGame=Math.max(500,...gamePoints),xMax=Math.ceil(maxGame/500)*500;
+  const xAt=g=>left+(g/xMax)*gw;
+  ctx.font='10px sans-serif';ctx.textAlign='right';
+  for(let v=min;v<=max;v+=500){
+    const y=height-bottom-(v-min)/range*gh;ctx.beginPath();ctx.strokeStyle=v===0?'#888':'#333';ctx.setLineDash(v===0?[]:[3,3]);ctx.lineWidth=v===0?1.5:1;ctx.moveTo(left,y);ctx.lineTo(width-right,y);ctx.stroke();
+    ctx.fillStyle=v>0?'#ff7b72':v<0?'#75bfff':'#aaa';ctx.fillText(v>0?'+'+v:v,left-5,y+3);
+  }
+  ctx.setLineDash([]);
+  for(let g=0;g<=xMax;g+=500){
+    const x=xAt(g);ctx.beginPath();ctx.strokeStyle='#303030';ctx.lineWidth=1;ctx.moveTo(x,top);ctx.lineTo(x,height-bottom);ctx.stroke();
+    const labelEvery=xMax>4000?1000:500;
+    if(g%labelEvery===0){ctx.fillStyle='#aaa';ctx.font='9px sans-serif';ctx.textAlign='center';ctx.fillText(g===0?'0':g.toLocaleString('ja-JP'),x,height-16);}
+  }
+  ctx.fillStyle='#aaa';ctx.font='9px sans-serif';ctx.textAlign='right';ctx.fillText('G',width-right,height-3);
+  ctx.strokeStyle='#0a84ff';ctx.lineWidth=2.2;ctx.beginPath();
+  data.forEach((v,i)=>{const x=xAt(Number(gamePoints[i])||0),y=height-bottom-(v-min)/range*gh;if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);});ctx.stroke();
+  data.forEach((v,i)=>{const x=xAt(Number(gamePoints[i])||0),y=height-bottom-(v-min)/range*gh;ctx.beginPath();ctx.fillStyle=v>=0?'#ff453a':'#0a84ff';ctx.arc(x,y,3,0,Math.PI*2);ctx.fill();});
+}
+function renderCutAnalysis(sections){
+  const holder=document.getElementById('cut-analysis');
+  const findings=[];
+  sections.forEach(sec=>{
+    let games=0,diff=0,prevGames=0,prevDiff=0;
+    sec.items.forEach(item=>{
+      prevGames=games;prevDiff=diff;
+      games+=(Number(item.initialG)||0)+(Number(item.addG)||0);
+      diff+=itemDiff(item);
+      const key=item.modelKey||'unknown';
+      let thresholds=[];
+      if(key==='gold'){
+        if((prevGames<1600&&games>=1600)||(prevGames<2000&&games>=2000)) thresholds.push('GOLD：1,600〜2,000G帯');
+      }else if(key==='black'){
+        [2000,2600,3000,3600,4000].forEach(t=>{if(prevGames<t&&games>=t)thresholds.push(`BLACK：${t.toLocaleString('ja-JP')}G付近`);});
+      }else if(key==='gorgeous'){
+        [2600,3000,3600,4000].forEach(t=>{if(prevGames<t&&games>=t)thresholds.push(`GORGEOUS：${t.toLocaleString('ja-JP')}G付近`);});
+      }
+      thresholds.forEach(t=>findings.push({section:sec.index,game:games,diff,kind:'game',label:t,bonus:item.bonusType}));
+      if(prevDiff<2098&&diff>=2098){
+        findings.push({section:sec.index,game:games,diff,kind:'diff',label:'差枚数＋2,098〜＋2,250枚の範囲を通過',bonus:item.bonusType});
+      }
+    });
+  });
+  if(!histories.some(isBonus)){holder.innerHTML='<p class="empty">履歴を入力すると参考判定を表示します。</p>';return;}
+  if(!findings.length){holder.innerHTML='<p class="small">現在の履歴では、設定したゲーム数・差枚数の切断候補を検出していません。候補に達していないことは、切断が起きていない証明にはなりません。</p>';return;}
+  holder.innerHTML='';
+  findings.forEach(f=>{
+    const row=document.createElement('div');row.className='regbox';row.style.marginBottom='7px';
+    const strong=document.createElement('strong');strong.textContent=f.kind==='diff'?'差枚数切断の可能性が高い':'有利区間切断候補';
+    const detail=document.createElement('p');detail.className='small';detail.textContent=`区間${f.section}・${f.label}／区間目安 ${fmt(f.game)}G／推定差枚 ${f.diff>0?'+':''}${fmt(f.diff)}枚（${f.bonus}後）`;
+    row.append(strong,detail);holder.appendChild(row);
+  });
+}
+function escapeHtml(str){return String(str).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+</script>
+<div class="card" id="change-log">
+  <h2>更新履歴</h2>
+  <ul class="small" style="padding-left:20px;line-height:1.7">
+    <li>HTMLのタイトルと見出しを「沖ドキ考察｜GPT」に変更。</li>
+    <li>「履歴を書き出し」ボタンと、未使用となる履歴書き出し処理を削除。</li>
+    <li>全体・区間別グラフの横軸を累計G数に変更し、500G刻みの目盛りを追加（表示が混み合う場合はラベルのみ1,000G刻み）。</li>
+    <li>有利区間切断候補の参考判定を追加。GOLDは1,600〜2,000G帯、BLACKは2,000・2,600・3,000・3,600・4,000G付近、GORGEOUSは2,600・3,000・3,600・4,000G付近を候補として表示。</li>
+    <li>有利区間切断候補と差枚数切断候補に該当するボーナス履歴の初当たりG欄に、それぞれ色分けしたマークを追加。</li>
+    <li>推定差枚が＋2,098〜＋2,250枚の範囲を通過した場合、「差枚数切断の可能性が高い」と表示。</li>
+    <li>設定判別機能を追加。チェックを付けた初当たり履歴から初当たりBIG・REG実績確率を表示し、機種別の初当たり確率とチェリーB実測値から設定1・2・3・5・6を推定。</li>
+    <li>初当たりとして集計するかをボーナス追加時および履歴表から切り替え可能にし、連チャン中のボーナスを設定判別から除外できるよう変更。</li>
+    <li>チェリーB回数とカウント対象ゲーム数の手入力欄を追加し、機種別に保存。全リセット時はチェリーBカウントも消去。</li>
+    <li>設定判別の初当たり集計を修正。前回ボーナス後32G以内のボーナスは連チャン扱いとして自動除外し、履歴表でも対象チェックを無効化。</li>
+    <li>初当たりG数入力欄の直下に数字パッドを追加。数字入力・1文字削除・全消去を可能に。</li>
+    <li>数字パッドでの入力・履歴追加後に入力欄へ自動フォーカスしないよう変更。スマホのソフトウェアキーボードが勝手に開く問題を防止。</li>
+    <li>「全体の出玉推移」を「設定判別（初当たり＋チェリーB）」より上に移動。</li>
+    <li>区切り線に長押しドラッグ移動を追加。履歴内の任意位置へ移動でき、区切り線の上下ボタン操作を廃止。</li>
+    <li>既存の出玉・差枚数計算式、履歴保存、全リセット機能は変更せず維持。</li>
+  </ul>
+</div>
+
+</body>
+</html>
