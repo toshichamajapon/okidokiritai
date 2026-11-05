@@ -59,9 +59,18 @@ tr.row-sep{background:#ffe066;color:#111}tr.row-sep td{color:#111;font-weight:bo
 .memo-details>summary{display:flex;align-items:center;justify-content:space-between;gap:12px;list-style:none;cursor:pointer;min-height:28px;touch-action:manipulation;user-select:none;-webkit-user-select:none}
 .memo-details>summary::-webkit-details-marker{display:none}
 .memo-details>summary h2{margin:0}
+.version-label{font-size:.5em;font-weight:500;color:#aaa;vertical-align:baseline;margin-left:3px}
 .memo-details>summary .memo-arrow{flex:0 0 auto;color:var(--sub);font-size:.9rem;transition:transform .18s ease}
 .memo-details[open]>summary .memo-arrow{transform:rotate(180deg)}
 .memo-details>.memo-content{padding-top:12px}
+/* ハイビスカス点灯パターン一覧 */
+.hibi-table{width:100%;border-collapse:collapse;white-space:normal;text-align:left;font-size:.78rem}
+.hibi-table th,.hibi-table td{padding:8px 7px;border-bottom:1px solid #383838;vertical-align:top;line-height:1.45}
+.hibi-table th{background:#333;color:#aaa}
+.hibi-table td:first-child{font-weight:600;min-width:42%}
+.hibi-table .hint{color:#aaa;font-size:.72rem;font-weight:400}
+.hibi-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:8px}
+.hibi-note{font-size:.75rem;color:var(--sub);line-height:1.5;margin-bottom:8px}
 .keypad{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:7px;max-width:440px}
 .keypad button{min-height:48px;border:1px solid #554936;border-radius:8px;background:#f6e8d4;color:#252525;font-size:1.25rem;font-weight:600;touch-action:manipulation}
 .keypad button:active{background:#e8cda9;transform:scale(.98)}
@@ -631,9 +640,69 @@ function renderCutAnalysis(sections){
 }
 function escapeHtml(str){return String(str).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 </script>
+<div class="card" id="hibiscus-patterns">
+  <details class="memo-details">
+    <summary aria-controls="hibiscus-patterns-content"><h2>ハイビスカスの光り方一覧表</h2><span class="memo-arrow" aria-hidden="true">▼</span></summary>
+    <div class="memo-content" id="hibiscus-patterns-content">
+      <p class="hibi-note">沖ドキ！GOLDの点灯パターンとモード示唆の参考一覧。示唆は次回モードについての情報です。</p>
+      <div class="hibi-wrap">
+        <table class="hibi-table">
+          <thead><tr><th>点灯パターン</th><th>示唆</th></tr></thead>
+          <tbody>
+            <tr><td>通常点滅</td><td>デフォルト</td></tr>
+            <tr><td>常灯点灯</td><td>デフォルト</td></tr>
+            <tr><td>リール回転時点滅</td><td>デフォルト</td></tr>
+            <tr><td>左右二回点滅</td><td>デフォルト</td></tr>
+            <tr><td>瞬き点滅</td><td>デフォルト</td></tr>
+            <tr><td>だんだん高速点滅</td><td>デフォルト</td></tr>
+            <tr><td>右から点滅</td><td>デフォルト</td></tr>
+            <tr><td>花だけ点滅</td><td>デフォルト</td></tr>
+            <tr><td>葉っぱだけ点滅</td><td>デフォルト</td></tr>
+            <tr><td>ぼんやり点滅</td><td>デフォルト</td></tr>
+            <tr><td>薄光り</td><td>デフォルト</td></tr>
+            <tr><td>ブリッジ点滅</td><td>通常B以上示唆</td></tr>
+            <tr><td>ストリーム点滅</td><td>通常B以上示唆</td></tr>
+            <tr><td>高速点滅</td><td>通常B以上示唆</td></tr>
+            <tr><td>スロー点滅</td><td>通常B以上示唆</td></tr>
+            <tr><td>常灯から点滅</td><td>通常B以上示唆 <span class="hint">（期待度高）</span></td></tr>
+            <tr><td>スロー→高速点滅</td><td>通常B以上示唆 <span class="hint">（期待度高）</span></td></tr>
+            <tr><td>同時点滅</td><td>通常B以上確定</td></tr>
+            <tr><td>通常点滅から同時点滅</td><td>通常B以上確定</td></tr>
+            <tr><td>花と葉っぱ交互点滅</td><td>通常B以上確定</td></tr>
+            <tr><td>全体メラメラ点滅</td><td>天国期待度アップ</td></tr>
+            <tr><td>花だけメラメラ点滅</td><td>天国期待度アップ</td></tr>
+            <tr><td>337拍子</td><td>天国以上示唆</td></tr>
+            <tr><td>右のみ点滅</td><td>天国以上確定</td></tr>
+            <tr><td>点滅時パネル消灯</td><td>天国以上確定</td></tr>
+            <tr><td>カラフル点滅</td><td>天国以上確定</td></tr>
+            <tr><td>左のみ点滅</td><td>ドキドキ以上確定</td></tr>
+            <tr><td>リバースストリーム点滅</td><td>ドキドキ以上確定</td></tr>
+            <tr><td>通常点滅＋ドキドキランプ点灯</td><td>超ドキドキ確定</td></tr>
+            <tr><td>しだれ柳</td><td>超ドキドキ確定</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <h2 style="margin-top:14px">分かりづらい点灯パターンの特徴</h2>
+      <div class="hibi-wrap">
+        <table class="hibi-table">
+          <thead><tr><th>点灯パターン</th><th>特徴</th></tr></thead>
+          <tbody>
+            <tr><td>ブリッジ点滅</td><td>左から右、右から左へ光が交互に流れる</td></tr>
+            <tr><td>ストリーム点滅</td><td>左右のハイビスカスそれぞれ、左から右へゆらゆらと光が揺れる</td></tr>
+            <tr><td>カラフル点滅</td><td>左右のハイビスカスそれぞれ、ハイビスカスの中を回るように色が流れる</td></tr>
+            <tr><td>リバースストリーム点滅</td><td>ストリーム点滅の逆パターン。右から左へゆらゆらと光が揺れる</td></tr>
+            <tr><td>しだれ柳</td><td>左右のハイビスカスそれぞれ、一瞬点滅後に光が上から下へ流れる</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="hibi-note" style="margin-top:8px">参考：<a href="https://nana-press.com/kaiseki/machine/478/12854/" target="_blank" rel="noopener noreferrer" style="color:#8fc7ff">なな徹「沖ドキ！GOLD ハイビスカスランプの光り方」</a></p>
+    </div>
+  </details>
+</div>
+
 <div class="card" id="change-log">
   <details class="memo-details">
-    <summary aria-controls="change-log-content"><h2>更新履歴</h2><span class="memo-arrow" aria-hidden="true">▼</span></summary>
+    <summary aria-controls="change-log-content"><h2>更新履歴 <span class="version-label">ver.20</span></h2><span class="memo-arrow" aria-hidden="true">▼</span></summary>
     <div class="memo-content" id="change-log-content">
   <ul class="small" style="padding-left:20px;line-height:1.7">
     <li>HTMLのタイトルと見出しを「沖ドキ考察｜GPT」に変更。</li>
@@ -654,6 +723,9 @@ function escapeHtml(str){return String(str).replace(/[&<>"']/g,c=>({'&':'&amp;',
     <li>検索エンジン向けに noindex,nofollow を指定。6号機規制メモと更新履歴を折り畳み式に変更。</li>
     <li>履歴表の「区間加算後G」が2,000G以上かつ同じ行の「推定機械割」が65.0%以上の初当たりから始まる連チャンを判定。初当たりを含めて6連以上・獲得枚数合計1,000枚超の場合、初当たり後の32G以内のボーナス履歴のみをレインボー表示。</li>
     <li>登録済みのボーナス履歴を機種別に一括変更する機能を追加。初当たりG数・BIG/REG・獲得枚数・履歴順を維持し、機種名と機種別のボーナス加算Gを変更。</li>
+    <li>更新履歴にバージョン表記を追加。以後の更新ごとにverを1ずつ加算。</li>
+    <li>ハイビスカスの光り方一覧表を追加。点灯パターン別の示唆と分かりづらいパターンの特徴を、折り畳み式で確認できるように変更。</li>
+
   </ul>
     </div>
   </details>
