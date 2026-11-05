@@ -53,6 +53,12 @@ tr.row-sep{background:#ffe066;color:#111}tr.row-sep td{color:#111;font-weight:bo
 .regbox strong{display:block;color:#fff;margin-bottom:4px}
 .empty{text-align:center;color:var(--sub);padding:18px}
 .setting-inputs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.setting-note{font-size:.75rem;color:var(--sub);line-height:1.55}.setting-result{background:#333;border:1px solid #444;border-radius:8px;padding:10px;margin:8px 0}.setting-result strong{color:#fff}.setting-row{display:grid;grid-template-columns:52px 1fr 52px;align-items:center;gap:8px;margin:8px 0;font-size:.8rem}.setting-row .bartrack{margin:0}.setting-row .barfill{background:#0a84ff}.setting-toggle{display:flex;align-items:flex-start;gap:7px;font-size:.8rem;color:var(--text);margin:8px 0}.setting-toggle input{margin-top:3px;accent-color:#0a84ff}
+.memo-details>summary{display:flex;align-items:center;justify-content:space-between;gap:12px;list-style:none;cursor:pointer;min-height:28px;touch-action:manipulation;user-select:none;-webkit-user-select:none}
+.memo-details>summary::-webkit-details-marker{display:none}
+.memo-details>summary h2{margin:0}
+.memo-details>summary .memo-arrow{flex:0 0 auto;color:var(--sub);font-size:.9rem;transition:transform .18s ease}
+.memo-details[open]>summary .memo-arrow{transform:rotate(180deg)}
+.memo-details>.memo-content{padding-top:12px}
 .keypad{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:7px;max-width:440px}
 .keypad button{min-height:48px;border:1px solid #554936;border-radius:8px;background:#f6e8d4;color:#252525;font-size:1.25rem;font-weight:600;touch-action:manipulation}
 .keypad button:active{background:#e8cda9;transform:scale(.98)}
@@ -162,15 +168,19 @@ tr.drop-after td{box-shadow:inset 0 -3px #00d4ff}
 </div>
 
 <div class="card">
-  <h2>6号機規制メモ</h2>
-  <div class="reggrid">
-    <div class="regbox"><strong>短期出玉率試験（400G）</strong>下限 33.3%超 / 上限 220%未満</div>
-    <div class="regbox"><strong>中期出玉率試験（1,600G）</strong>下限 40%超 / 上限 150%未満</div>
-    <div class="regbox"><strong>長期出玉率試験（6,000G）</strong>下限 50%超 / 上限 126%未満</div>
-    <div class="regbox"><strong>超長期出玉率試験（17,500G）</strong>下限 60%超 / 上限 115%未満</div>
-  </div>
-  <p class="notice">この規制メモは試験基準の参考表示です。履歴から算出する「推定機械割」は、実機の出玉率試験と同じ計測方法ではないため、適合・不適合や規制到達を判定できません。</p>
-  <p class="small" style="margin-top:8px">有利区間の上限表示：GOLD / BLACK は4,000G、GORGEOUS は6,000Gを目安として表示。コンプリート機能（差枚数による作動）は実際の台の総差枚や状態が必要なため、この履歴だけでは自動判定しません。</p>
+  <details class="memo-details">
+    <summary aria-controls="regulation-memo-content"><h2>6号機規制メモ</h2><span class="memo-arrow" aria-hidden="true">▼</span></summary>
+    <div class="memo-content" id="regulation-memo-content">
+      <div class="reggrid">
+        <div class="regbox"><strong>短期出玉率試験（400G）</strong>下限 33.3%超 / 上限 220%未満</div>
+        <div class="regbox"><strong>中期出玉率試験（1,600G）</strong>下限 40%超 / 上限 150%未満</div>
+        <div class="regbox"><strong>長期出玉率試験（6,000G）</strong>下限 50%超 / 上限 126%未満</div>
+        <div class="regbox"><strong>超長期出玉率試験（17,500G）</strong>下限 60%超 / 上限 115%未満</div>
+      </div>
+      <p class="notice">この規制メモは試験基準の参考表示です。履歴から算出する「推定機械割」は、実機の出玉率試験と同じ計測方法ではないため、適合・不適合や規制到達を判定できません。</p>
+      <p class="small" style="margin-top:8px">有利区間の上限表示：GOLD / BLACK は4,000G、GORGEOUS は6,000Gを目安として表示。コンプリート機能（差枚数による作動）は実際の台の総差枚や状態が必要なため、この履歴だけでは自動判定しません。</p>
+    </div>
+  </details>
 </div>
 
 
@@ -545,7 +555,9 @@ function renderCutAnalysis(sections){
 function escapeHtml(str){return String(str).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 </script>
 <div class="card" id="change-log">
-  <h2>更新履歴</h2>
+  <details class="memo-details">
+    <summary aria-controls="change-log-content"><h2>更新履歴</h2><span class="memo-arrow" aria-hidden="true">▼</span></summary>
+    <div class="memo-content" id="change-log-content">
   <ul class="small" style="padding-left:20px;line-height:1.7">
     <li>HTMLのタイトルと見出しを「沖ドキ考察｜GPT」に変更。</li>
     <li>「履歴を書き出し」ボタンと、未使用となる履歴書き出し処理を削除。</li>
@@ -562,7 +574,10 @@ function escapeHtml(str){return String(str).replace(/[&<>"']/g,c=>({'&':'&amp;',
     <li>「全体の出玉推移」を「設定判別（初当たり＋チェリーB）」より上に移動。</li>
     <li>区切り線に長押しドラッグ移動を追加。履歴内の任意位置へ移動でき、区切り線の上下ボタン操作を廃止。</li>
     <li>既存の出玉・差枚数計算式、履歴保存、全リセット機能は変更せず維持。</li>
+    <li>検索エンジン向けに noindex,nofollow を指定。6号機規制メモと更新履歴を折り畳み式に変更。</li>
   </ul>
+    </div>
+  </details>
 </div>
 
 </body>
