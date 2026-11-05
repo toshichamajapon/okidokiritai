@@ -64,6 +64,9 @@ tr.row-sep{background:#ffe066;color:#111}tr.row-sep td{color:#111;font-weight:bo
 .keypad button:active{background:#e8cda9;transform:scale(.98)}
 .keypad .key-func{font-size:1rem;background:#d9d9d9}
 #game-input{font-size:1.15rem;font-weight:700}
+/* 条件達成後の連チャン履歴：レインボー表示 */
+tr.row-rainbow{background:linear-gradient(90deg,#ff4d4d 0%,#ff9f43 16%,#ffe66d 32%,#6bde79 48%,#55c7ff 64%,#8b75ff 80%,#ed6bcb 100%) !important;color:#171717;font-weight:700}
+tr.row-rainbow td{color:#171717 !important;border-bottom-color:#ffffff88}
 .row-sep td{position:relative}
 .sep-grip{display:inline-flex;align-items:center;gap:7px;padding:9px 12px;border:1px solid #8b741d;border-radius:7px;background:#f5d65c;color:#241d00;font-weight:700;touch-action:none;user-select:none;-webkit-user-select:none;cursor:grab}
 .sep-grip:active{cursor:grabbing}
@@ -340,12 +343,57 @@ function buildSections(){
   return sections;
 }
 
+// 区間加算後Gが2,000G以上、履歴表の推定機械割が65.0%以上の初当たりから始まる連チャンを判定する。
+// 初当たり行は色付けせず、その後32G以内で続いたボーナス行のみを対象にする。
+function getRainbowBonusIds(){
+  const ids=new Set();
+  let cumulativeActiveG=0,cumulativeDiff=0,sectionG=0,sectionAddG=0;
+  const entries=[];
+  histories.forEach(item=>{
+    if(item.type==='separator'){
+      sectionG=0;sectionAddG=0;entries.push(null);return;
+    }
+    const initialG=Number(item.initialG)||0;
+    const addG=Number(item.addG)||0;
+    cumulativeActiveG+=initialG+addG;
+    cumulativeDiff+=itemDiff(item);
+    sectionG+=initialG;sectionAddG+=addG;
+    // 履歴表の「推定機械割」と同じ計算・累計範囲を参照する。
+    const totalIn=cumulativeActiveG*3;
+    const totalOut=totalIn+cumulativeDiff;
+    const displayedRate=totalIn>0?(totalOut/totalIn)*100:null;
+    entries.push({item,sectionGame:sectionG+sectionAddG,displayedRate});
+  });
+
+  for(let i=0;i<entries.length;i++){
+    const start=entries[i];
+    if(!start||Number(start.item.initialG)<=32||start.sectionGame<2000||start.displayedRate===null||start.displayedRate<65)continue;
+
+    // 初当たりの次から、各ボーナス間が32G以内で続く範囲を連チャンとして扱う。
+    const chain=[start];
+    for(let j=i+1;j<entries.length;j++){
+      const next=entries[j];
+      if(!next||Number(next.item.initialG)>32)break;
+      chain.push(next);
+    }
+    const chainPayout=chain.reduce((sum,x)=>sum+(Number(x.item.payout)||0),0);
+    // 初当たりを含めて6連以上、かつ獲得枚数合計が1,000枚を超える場合のみ、
+    // 初当たり後の連チャン履歴をレインボー表示する。
+    if(chain.length>=6&&chainPayout>1000){
+      chain.slice(1).forEach(x=>ids.add(x.item.id));
+      i+=chain.length-1;
+    }
+  }
+  return ids;
+}
+
 function render(){
   const tbody=document.getElementById('history-list');tbody.innerHTML='';
   const empty=document.getElementById('empty-message');empty.style.display=histories.length?'none':'block';
   let cumActiveG=0,cumDiffCoins=0,bonusCount=0,sectionG=0,sectionAddG=0;
   const overallData=[0],overallGames=[0],sections=buildSections();
   const cutMarks=getCutMarks(sections);
+  const rainbowIds=getRainbowBonusIds();
   histories.forEach((item,index)=>{
     const tr=document.createElement('tr');
     tr.dataset.index=index;
@@ -359,7 +407,7 @@ function render(){
       const totalIn=cumActiveG*3,totalOut=totalIn+cumDiffCoins;
       const rate=totalIn>0?(totalOut/totalIn)*100:null;
       const intervalGameEstimate=sectionG+sectionAddG;
-      tr.className=item.bonusType==='BIG'?'row-big':'row-reg';
+      tr.className=(item.bonusType==='BIG'?'row-big':'row-reg')+(rainbowIds.has(item.id)?' row-rainbow':'');
       const d=cumDiffCoins>=0?'+'+fmt(cumDiffCoins):fmt(cumDiffCoins);
       const marks=cutMarks.get(item.id)||[];
       const marksHtml=marks.length?`<div class="cut-marks">${marks.map(m=>`<span class="cut-mark ${m.kind}" title="${escapeHtml(m.title)}">${m.kind==='diff'?'⚡差枚数切断':'🌀切断候補'}</span>`).join('')}</div>`:'';
@@ -575,6 +623,7 @@ function escapeHtml(str){return String(str).replace(/[&<>"']/g,c=>({'&':'&amp;',
     <li>区切り線に長押しドラッグ移動を追加。履歴内の任意位置へ移動でき、区切り線の上下ボタン操作を廃止。</li>
     <li>既存の出玉・差枚数計算式、履歴保存、全リセット機能は変更せず維持。</li>
     <li>検索エンジン向けに noindex,nofollow を指定。6号機規制メモと更新履歴を折り畳み式に変更。</li>
+    <li>履歴表の「区間加算後G」が2,000G以上かつ同じ行の「推定機械割」が65.0%以上の初当たりから始まる連チャンを判定。初当たりを含めて6連以上・獲得枚数合計1,000枚超の場合、初当たり後の32G以内のボーナス履歴のみをレインボー表示。</li>
   </ul>
     </div>
   </details>
