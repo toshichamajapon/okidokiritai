@@ -60,6 +60,7 @@ tr.row-sep{background:#ffe066;color:#111}tr.row-sep td{color:#111;font-weight:bo
 .memo-details>summary::-webkit-details-marker{display:none}
 .memo-details>summary h2{margin:0}
 .version-label{font-size:.5em;font-weight:500;color:#aaa;vertical-align:baseline;margin-left:3px}
+.update-time{font-size:.5em;font-weight:500;color:#aaa;vertical-align:baseline;margin-left:6px}
 .memo-details>summary .memo-arrow{flex:0 0 auto;color:var(--sub);font-size:.9rem;transition:transform .18s ease}
 .memo-details[open]>summary .memo-arrow{transform:rotate(180deg)}
 .memo-details>.memo-content{padding-top:12px}
@@ -702,7 +703,7 @@ function escapeHtml(str){return String(str).replace(/[&<>"']/g,c=>({'&':'&amp;',
 
 <div class="card" id="change-log">
   <details class="memo-details">
-    <summary aria-controls="change-log-content"><h2>更新履歴 <span class="version-label">ver.20</span></h2><span class="memo-arrow" aria-hidden="true">▼</span></summary>
+    <summary aria-controls="change-log-content"><h2>更新履歴 <span class="version-label">ver.21</span><span class="update-time">2026年11月6日 2時24分</span></h2><span class="memo-arrow" aria-hidden="true">▼</span></summary>
     <div class="memo-content" id="change-log-content">
   <ul class="small" style="padding-left:20px;line-height:1.7">
     <li>HTMLのタイトルと見出しを「沖ドキ考察｜GPT」に変更。</li>
@@ -725,6 +726,7 @@ function escapeHtml(str){return String(str).replace(/[&<>"']/g,c=>({'&':'&amp;',
     <li>登録済みのボーナス履歴を機種別に一括変更する機能を追加。初当たりG数・BIG/REG・獲得枚数・履歴順を維持し、機種名と機種別のボーナス加算Gを変更。</li>
     <li>更新履歴にバージョン表記を追加。以後の更新ごとにverを1ずつ加算。</li>
     <li>ハイビスカスの光り方一覧表を追加。点灯パターン別の示唆と分かりづらいパターンの特徴を、折り畳み式で確認できるように変更。</li>
+    <li>更新履歴の見出しに、バージョンと最終更新日時（年月日・時分）を並べて表示するよう変更。</li>
 
   </ul>
     </div>
