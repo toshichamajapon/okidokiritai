@@ -22,8 +22,7 @@ canvas{display:block;width:100%;height:180px;background:#181818;border-radius:6p
 .metric .value{font-size:1.05rem;font-weight:700;color:#fff;overflow-wrap:anywhere}
 label{display:block;font-size:.8rem;font-weight:700;color:var(--sub);margin-bottom:4px}
 .form-group{margin-bottom:10px}
-select,input[type=number],textarea{width:100%;padding:10px;border:1px solid var(--border);border-radius:6px;background:#333;color:#fff;font-size:1rem}
-textarea{resize:vertical;min-height:80px}
+select,input[type=number]{width:100%;padding:10px;border:1px solid var(--border);border-radius:6px;background:#333;color:#fff;font-size:1rem}
 .payout{display:flex;gap:10px}.payout .form-group{flex:1;min-width:0}
 .btns{display:flex;gap:8px;margin-top:8px}
 button{cursor:pointer}
@@ -61,6 +60,7 @@ tr.row-sep{background:#ffe066;color:#111}tr.row-sep td{color:#111;font-weight:bo
 .memo-details>summary::-webkit-details-marker{display:none}
 .memo-details>summary h2{margin:0}
 .version-label{font-size:.5em;font-weight:500;color:#aaa;vertical-align:baseline;margin-left:3px}
+.update-time{font-size:.5em;font-weight:500;color:#aaa;vertical-align:baseline;margin-left:6px}
 .memo-details>summary .memo-arrow{flex:0 0 auto;color:var(--sub);font-size:.9rem;transition:transform .18s ease}
 .memo-details[open]>summary .memo-arrow{transform:rotate(180deg)}
 .memo-details>.memo-content{padding-top:12px}
@@ -94,6 +94,61 @@ tr.drop-after td{box-shadow:inset 0 -3px #00d4ff}
 <body>
 <h1>沖ドキ考察｜GPT</h1>
 
+<style>
+.import-card .site-choice{display:flex;gap:8px;margin:8px 0}
+.import-card .site-choice button{flex:1;padding:11px;border:1px solid #555;border-radius:8px;background:#333;color:#fff;font-weight:700}
+.import-card .site-choice button.selected{border-color:#58a6ff;background:#17324d;color:#fff}
+.import-card input[type=file]{width:100%;padding:9px;background:#333;border:1px solid #555;border-radius:7px;color:#ddd}
+.import-progress{height:8px;background:#444;border-radius:8px;overflow:hidden;margin:8px 0}
+.import-progress>div{height:100%;width:0;background:#0a84ff;transition:width .15s}
+.import-table{width:100%;border-collapse:collapse;font-size:.8rem}
+.import-table input,.import-table select{padding:6px;background:#333;color:#fff;border:1px solid #555;border-radius:5px;max-width:100%}
+.import-table input{width:75px}.import-table select{width:90px}
+.import-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.import-actions button{flex:1;min-width:120px;padding:10px;border:1px solid #555;border-radius:7px;background:#444;color:#fff;font-weight:700}
+.import-actions .primary{background:#075c9e;border-color:#1684d8}
+.import-status{font-size:.78rem;line-height:1.5;color:#bbb;margin-top:7px;white-space:pre-wrap}
+.import-error{color:#ff9b9b;background:#492626;border:1px solid #884444;border-radius:7px;padding:8px;margin:6px 0}
+.import-warning{color:#ffd78a;background:#493b20;border:1px solid #80652e;border-radius:7px;padding:8px;margin:6px 0}
+.import-ok{color:#9ee6ad}
+.import-table .invalid{border-color:#ff6868!important;outline:1px solid #ff6868}
+</style>
+<div class="card import-card" id="image-import-card">
+  <h2>スクリーンショットから履歴を読み込む</h2>
+  <p class="small">データーサイトを選択して画像を読み込みます。読み取り結果を確認・修正してから履歴に反映できます。</p>
+  <div class="site-choice" role="group" aria-label="データーサイト選択">
+    <button type="button" id="site-king" class="selected" onclick="selectImportSite('king')">キング</button>
+    <button type="button" id="site-wing" onclick="selectImportSite('wing')">ウイング</button>
+  </div>
+  <p id="import-rule" class="small">キング：下から上へ読み取り。ゲーム数・BIG/REGを使用し、時間は無視します。</p>
+  <div class="form-group" style="margin-top:10px">
+    <label for="history-images">スクリーンショット（複数選択可）</label>
+    <input id="history-images" type="file" accept="image/*" multiple>
+  </div>
+  <div class="import-actions"><button type="button" class="primary" id="recognize-button" onclick="recognizeHistoryImages()">画像を読み取る</button></div>
+  <details class="memo-details" style="margin-top:12px" open>
+    <summary><strong>テキスト一括インポート</strong></summary>
+    <div style="padding-top:10px">
+      <p class="small">画像をGPTなどでテキスト化した場合は、ここに貼り付けてください。1行につき「ゲーム数 種別」の形式で入力します。例：584 REG ／ 27 BIG。順番は古い履歴から新しい履歴です。</p>
+      <textarea id="history-text-import" rows="7" placeholder="584 REG&#10;162 REG&#10;6 REG&#10;628 REG&#10;216 BIG&#10;139 REG&#10;4 REG&#10;3 REG&#10;5 BIG&#10;1 BIG&#10;32 BIG&#10;27 BIG" style="width:100%;box-sizing:border-box;padding:10px;background:#222;color:#fff;border:1px solid #666;border-radius:7px;font:inherit"></textarea>
+      <div class="import-actions"><button type="button" class="primary" onclick="parseTextHistoryImport()">テキストを解析する</button><button type="button" onclick="document.getElementById('history-text-import').value='';">入力をクリア</button></div>
+    </div>
+  </details>
+  <div id="import-progress-wrap" class="import-progress" hidden><div id="import-progress-bar"></div></div>
+  <div id="import-status" class="import-status" aria-live="polite">初回は文字読み取りエンジンの読み込みに少し時間がかかります。画像はこのブラウザ内で処理します。</div>
+  <div id="import-diagnostics" class="import-status" aria-live="polite" hidden></div>
+  <div id="import-preview-wrap" hidden style="margin-top:12px">
+    <div class="actionbar"><strong>読み取り結果（確認・修正）</strong><span id="import-count" class="small"></span></div>
+    <div class="tablewrap"><table class="import-table"><thead><tr><th>取込</th><th>回数</th><th>ゲーム数</th><th>種別</th><th>画像</th></tr></thead><tbody id="import-preview"></tbody></table></div>
+    <p class="small" style="margin-top:7px">数字・BIG/REGの誤認識があれば、この表で修正してください。チェックを外した行は反映されません。</p>
+    <div class="import-actions">
+      <button type="button" class="primary" onclick="applyImportedHistory('append')">現在の履歴に追加</button>
+      <button type="button" class="danger" onclick="applyImportedHistory('replace')">現在の履歴を置き換え</button>
+    </div>
+  </div>
+</div>
+
+
 <div class="card">
   <h2>機種・獲得枚数設定</h2>
   <div class="form-group">
@@ -119,21 +174,6 @@ tr.drop-after td{box-shadow:inset 0 -3px #00d4ff}
   <p id="initial-hit-hint" class="small" style="margin-top:5px">32G以内のボーナスは連チャン扱いとして、設定判別の初当たりから自動除外します。</p>
   <div class="btns"><button class="bonus big" onclick="addHistory('BIG')">BIG</button><button class="bonus reg" onclick="addHistory('REG')">REG</button></div>
   <p class="small" style="margin-top:8px">機種ごとの獲得枚数は推定用の初期値です。実際の獲得枚数に合わせて編集できます。設定は追加時の履歴に保存されます。</p>
-</div>
-
-<!-- スクショテキスト一括インポート機能（堅牢な右側逆算パース対応） -->
-<div class="card">
-  <h2>スクショ・テキスト一括インポート</h2>
-  <p class="small" style="margin-bottom:8px">データサイト等のコピーテキストをここに貼り付けてください。時刻（例: <code>19:40</code>）が含まれていても自動で無視し、右側からゲーム数と種別を正確に読み取ります。</p>
-  <div class="form-group">
-    <textarea id="import-text" placeholder="例:
-12 19:40 27 BIG
-11 19:33 32 BIG
-..."></textarea>
-  </div>
-  <div class="btns">
-    <button type="button" class="action" style="flex:1;padding:10px;background:#0a84ff;font-weight:bold" onclick="parseAndImportText()">テキストを解析・インポート</button>
-  </div>
 </div>
 
 <div class="actionbar">
@@ -185,6 +225,8 @@ tr.drop-after td{box-shadow:inset 0 -3px #00d4ff}
   <p class="notice">推定設定は、提示された設定1・2・3・5・6の数値を等しい事前確率として比較した参考値です。設定4はデータがないため対象外です。試行回数が少ない場合や、初当たりの数え方・チェリーBのカウント対象ゲームが不正確な場合は推定が大きくブレます。BB・RBの公表確率は連チャンを含むため、初当たりだけの設定推測には直接混ぜていません。</p>
 </div>
 
+
+
 <div class="card">
   <h2>有利区間ゲーム数の目安</h2>
   <div class="reggrid">
@@ -221,6 +263,7 @@ tr.drop-after td{box-shadow:inset 0 -3px #00d4ff}
     </div>
   </details>
 </div>
+
 
 <script>
 const MODEL_CONFIG={
@@ -312,66 +355,6 @@ function addHistory(type){
   histories.push({id:Date.now()+Math.random(),type:'bonus',modelKey:key,modelName:config.name,bonusType:type,initialG:g,addG:type==='BIG'?config.bigAdd:config.regAdd,payout,isInitialHit:g>32&&document.getElementById('is-initial-hit').checked});
   saveLocal();render();input.value='';document.getElementById('is-initial-hit').checked=true;document.getElementById('initial-hit-hint').textContent='32G以内のボーナスは連チャン扱いとして、設定判別の初当たりから自動除外します。';
 }
-
-/* 堅牢なテキスト・スクショ解析パース処理（時刻スキップ＆右側逆算） */
-function parseAndImportText(){
-  const text=document.getElementById('import-text').value;
-  if(!text.trim()){alert('解析するテキストを入力してください。');return;}
-  const lines=text.split('
-');
-  const key=document.getElementById('model-select').value;
-  const config=MODEL_CONFIG[key];
-  const big=parseFloat(document.getElementById('big-payout').value);
-  const reg=parseFloat(document.getElementById('reg-payout').value);
-  
-  let importedCount=0;
-  lines.forEach(line=>{
-    const trimmed=line.trim();
-    if(!trimmed)return;
-    
-    // 1. 末尾の BIG / REG を取得
-    const typeMatch=trimmed.match(/(BIG|REG)$/i);
-    if(!typeMatch)return;
-    const bonusType=typeMatch[1].toUpperCase();
-    
-    // 2. スペース区切りでトークン化し、時刻(XX:XX)や種別を除外した純粋な数値を抽出
-    const tokens=trimmed.split(/\s+/);
-    const numericTokens=tokens.filter(t=>{
-      const upper=t.toUpperCase();
-      return !t.includes(':') && upper!=='BIG' && upper!=='REG';
-    });
-    
-    if(numericTokens.length>=1){
-      // 3. 右側（種別直前）をゲーム数、先頭を回数として逆算取得
-      const games=parseInt(numericTokens[numericTokens.length-1],10);
-      if(Number.isFinite(games)&&games>=0){
-        const payout=bonusType==='BIG'?big:reg;
-        histories.push({
-          id:Date.now()+Math.random(),
-          type:'bonus',
-          modelKey:key,
-          modelName:config.name,
-          bonusType:bonusType,
-          initialG:games,
-          addG:bonusType==='BIG'?config.bigAdd:config.regAdd,
-          payout:payout,
-          isInitialHit:games>32
-        });
-        importedCount++;
-      }
-    }
-  });
-  
-  if(importedCount>0){
-    saveLocal();
-    render();
-    document.getElementById('import-text').value='';
-    alert(`${importedCount}件のボーナス履歴をインポートしました！`);
-  }else{
-    alert('有効な履歴データを検出できませんでした。入力フォーマットを確認してください。');
-  }
-}
-
 function addSeparator(){
   const count=histories.filter(x=>x.type==='separator').length+1;
   histories.push({id:Date.now()+Math.random(),type:'separator',name:`区切り線 ${count}`});
@@ -426,9 +409,7 @@ function bulkChangeModel(){
   const count=histories.filter(isBonus).length;
   if(!count){alert('変更できるボーナス履歴がありません。');return;}
   const targetName=config.name;
-  if(!confirm(`登録済みのボーナス履歴 ${count}件を「沖ドキ！${targetName.toUpperCase()}」に一括変更しますか？
-
-初当たりG数・BIG/REG・獲得枚数・履歴順は維持し、機種名と機種別のボーナス加算Gを変更します。`))return;
+  if(!confirm(`登録済みのボーナス履歴 ${count}件を「沖ドキ！${targetName.toUpperCase()}」に一括変更しますか？\n\n初当たりG数・BIG/REG・獲得枚数・履歴順は維持し、機種名とボーナス加算Gを変更します。`))return;
   histories.forEach(item=>{
     if(!isBonus(item))return;
     item.modelKey=key;
@@ -456,6 +437,8 @@ function buildSections(){
   return sections;
 }
 
+// 区間加算後Gが2,000G以上、履歴表の推定機械割が65.0%以上の初当たりから始まる連チャンを判定する。
+// 初当たり行は色付けせず、その後32G以内で続いたボーナス行のみを対象にする。
 function getRainbowBonusIds(){
   const ids=new Set();
   let cumulativeActiveG=0,cumulativeDiff=0,sectionG=0,sectionAddG=0;
@@ -469,6 +452,7 @@ function getRainbowBonusIds(){
     cumulativeActiveG+=initialG+addG;
     cumulativeDiff+=itemDiff(item);
     sectionG+=initialG;sectionAddG+=addG;
+    // 履歴表の「推定機械割」と同じ計算・累計範囲を参照する。
     const totalIn=cumulativeActiveG*3;
     const totalOut=totalIn+cumulativeDiff;
     const displayedRate=totalIn>0?(totalOut/totalIn)*100:null;
@@ -479,6 +463,7 @@ function getRainbowBonusIds(){
     const start=entries[i];
     if(!start||Number(start.item.initialG)<=32||start.sectionGame<2000||start.displayedRate===null||start.displayedRate<65)continue;
 
+    // 初当たりの次から、各ボーナス間が32G以内で続く範囲を連チャンとして扱う。
     const chain=[start];
     for(let j=i+1;j<entries.length;j++){
       const next=entries[j];
@@ -486,6 +471,8 @@ function getRainbowBonusIds(){
       chain.push(next);
     }
     const chainPayout=chain.reduce((sum,x)=>sum+(Number(x.item.payout)||0),0);
+    // 初当たりを含めて6連以上、かつ獲得枚数合計が1,000枚を超える場合のみ、
+    // 初当たり後の連チャン履歴をレインボー表示する。
     if(chain.length>=6&&chainPayout>1000){
       chain.slice(1).forEach(x=>ids.add(x.item.id));
       i+=chain.length-1;
@@ -522,7 +509,7 @@ function render(){
     }
     tbody.appendChild(tr);
   });
-  const allInitialG=totalInitialG(),allAddG=totalAddG();
+  const allInitialG=totalInitialG(),allAddG=totalAddG(),allPayout=totalPayout();
   const allActiveG=allInitialG+allAddG;
   const allDiff=histories.filter(isBonus).reduce((sum,item)=>sum+itemDiff(item),0);
   const totalIn=allActiveG*3,totalOut=totalIn+allDiff;
@@ -537,7 +524,6 @@ function render(){
   renderSettingAnalysis();
   renderCharts(overallData,sections,overallGames);
 }
-
 function renderSettingAnalysis(){
   const holder=document.getElementById('setting-results');
   if(!holder)return;
@@ -570,18 +556,20 @@ function renderSettingAnalysis(){
   rows.forEach((r,i)=>r.posterior=weights[i]/sumWeights*100);
   rows.sort((a,b)=>b.posterior-a.posterior);
   const best=rows[0];
+  const cherryObserved=cherryGames>0?cherryGames/(cherryCount||Infinity):null;
   const invalidCherry=cherryGames>0&&cherryCount>cherryGames;
   const modeText=hasHitData&&cherryValid?'初当たり＋チェリーB':hasHitData?'初当たり確率のみ':'チェリーBのみ';
   let html=`<div class="setting-result"><div class="small">対象：沖ドキ！${config.name} ／ 判別材料：${modeText}</div><p style="font-size:1.05rem;margin-top:5px"><strong>推定設定：${best.setting}</strong>（相対推定 ${best.posterior.toFixed(1)}%）</p><p class="setting-note">初当たり集計：${hitCount}回（BIG ${bigCount}回・REG ${regCount}回）／初当たりG合計 ${fmt(totalG)}G</p></div>`;
   html+=`<div class="reggrid"><div class="regbox"><strong>初当たりBIG確率（実績）</strong>${bigRate!==null?'1/'+bigRate.toFixed(1):'—'}<p class="setting-note">BIG初当たり ${bigCount}回</p></div><div class="regbox"><strong>初当たりREG確率（実績）</strong>${regRate!==null?'1/'+regRate.toFixed(1):'—'}<p class="setting-note">REG初当たり ${regCount}回</p></div></div>`;
   if(cherryGames>0){
-    if(invalidCherry) html+='<p class="setting-note bad" style="margin-top:8px">入力エラー：チェリーB回数がカウント対象ゲーム数を超えています。</p>';
+    if(invalidCherry) html+='<p class="setting-note bad" style="margin-top:8px">入力エラー：チェリーB回数がカウント対象ゲーム数を超えています。チェリーBは推定に使用していません。</p>';
     else html+=`<p class="setting-note" style="margin-top:8px">チェリーB実績：${cherryCount}/${cherryGames.toLocaleString('ja-JP')}G（1/${(cherryGames/(cherryCount||Infinity)).toFixed(1)}）</p>`;
   }
   html+='<p class="setting-note" style="margin:10px 0 5px">設定ごとの相対推定</p>';
   rows.sort((a,b)=>a.setting-b.setting).forEach(r=>{
     html+=`<div class="setting-row"><strong>設定${r.setting}</strong><div class="bartrack"><div class="barfill" style="width:${r.posterior.toFixed(3)}%"></div></div><span style="text-align:right">${r.posterior.toFixed(1)}%</span></div>`;
   });
+  html+='<p class="setting-note">※表示％は入力した材料と今回の設定候補内で計算した相対値で、実際の設定が当たる確率を保証するものではありません。</p>';
   holder.innerHTML=html;
 }
 
@@ -605,7 +593,7 @@ function getCutMarks(sections){
         }
       });
       if(prevDiff<2098&&diff>=2098){
-        itemMarks.push({kind:'diff',title:`区間推定差枚が＋2,098枚に到達（現在 ${fmt(diff)}枚）`});
+        itemMarks.push({kind:'diff',title:`区間推定差枚が＋2,098枚に到達。＋2,098〜＋2,250枚帯の差枚数切断候補（現在 ${fmt(diff)}枚）`});
       }
       if(itemMarks.length) marks.set(item.id,itemMarks);
     });
@@ -697,7 +685,7 @@ function renderCutAnalysis(sections){
     });
   });
   if(!histories.some(isBonus)){holder.innerHTML='<p class="empty">履歴を入力すると参考判定を表示します。</p>';return;}
-  if(!findings.length){holder.innerHTML='<p class="small">現在の履歴では、設定したゲーム数・差枚数の切断候補を検出していません。</p>';return;}
+  if(!findings.length){holder.innerHTML='<p class="small">現在の履歴では、設定したゲーム数・差枚数の切断候補を検出していません。候補に達していないことは、切断が起きていない証明にはなりません。</p>';return;}
   holder.innerHTML='';
   findings.forEach(f=>{
     const row=document.createElement('div');row.className='regbox';row.style.marginBottom='7px';
@@ -707,13 +695,426 @@ function renderCutAnalysis(sections){
   });
 }
 function escapeHtml(str){return String(str).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-</script>
 
+// スクリーンショット履歴読み込み（端末共通・行単位解析OCR）
+let importSite='king';
+let importedRows=[];
+let importDiagnostics=[];
+let importTextHasErrors=false;
+let ocrWorkerPromise=null;
+function selectImportSite(site){
+  importSite=site;
+  document.getElementById('site-king').classList.toggle('selected',site==='king');
+  document.getElementById('site-wing').classList.toggle('selected',site==='wing');
+  document.getElementById('import-rule').textContent=site==='king'
+    ?'キング：下から上へ読み取り。回数・ゲーム数・BIG/REGを確認し、時間は読み取り結果から除外します。'
+    :'ウイング：表の行・列を検出し、スタートG列とBB/RB列だけを個別に読み取ります。回数は上から自動設定し、時刻・出玉は無視します。';
+}
+function setImportStatus(message){document.getElementById('import-status').textContent=message;}
+function setImportProgress(value){document.getElementById('import-progress-wrap').hidden=false;document.getElementById('import-progress-bar').style.width=Math.max(0,Math.min(100,value))+'%';}
+function showImportDiagnostics(items){
+  const box=document.getElementById('import-diagnostics');box.innerHTML='';
+  if(!items.length){box.hidden=true;return;}
+  box.hidden=false;
+  items.forEach(item=>{const div=document.createElement('div');div.className=item.level==='error'?'import-error':item.level==='warning'?'import-warning':'import-status';div.textContent=item.message;box.appendChild(div);});
+}
+async function getOcrWorker(){
+  if(ocrWorkerPromise)return ocrWorkerPromise;
+  ocrWorkerPromise=(async()=>{
+    if(!window.Tesseract){
+      await new Promise((resolve,reject)=>{const script=document.createElement('script');script.src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';script.onload=resolve;script.onerror=()=>reject(new Error('OCRエンジンを読み込めません。インターネット接続またはCDNへの接続を確認してください。'));document.head.appendChild(script);});
+    }
+    const worker=await Tesseract.createWorker('eng',1,{logger:m=>{if(m.status==='recognizing text')setImportProgress(m.progress*100);}});
+    await worker.setParameters({tessedit_pageseg_mode:'11',preserve_interword_spaces:'1',user_defined_dpi:'300'});
+    return worker;
+  })().catch(e=>{ocrWorkerPromise=null;throw e;});
+  return ocrWorkerPromise;
+}
+// 端末の解像度・縦横比に依存しないよう、元画像の比率を保ったままOCR用Canvasへ変換
+async function makeOcrImage(file){
+  let bitmap;
+  if('createImageBitmap' in window){try{bitmap=await createImageBitmap(file);}catch(e){}}
+  if(!bitmap){
+    const url=URL.createObjectURL(file);
+    try{bitmap=await new Promise((resolve,reject)=>{const img=new Image();img.onload=()=>resolve(img);img.onerror=()=>reject(new Error('画像を開けません。PNG/JPEGで保存し直してお試しください。'));img.src=url;});}
+    finally{URL.revokeObjectURL(url);}
+  }
+  const w=bitmap.width,h=bitmap.height;
+  if(!w||!h)throw new Error('画像サイズを取得できませんでした。');
+  const scale=Math.min(2.2,Math.max(1,1800/Math.max(w,h)));
+  const canvas=document.createElement('canvas');canvas.width=Math.round(w*scale);canvas.height=Math.round(h*scale);
+  const ctx=canvas.getContext('2d',{willReadFrequently:true});ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.drawImage(bitmap,0,0,canvas.width,canvas.height);
+  if(bitmap.close)bitmap.close();
+  return canvas;
+}
+function normalizeOcrWord(value){return String(value||'').trim().toUpperCase().replace(/[|｜]/g,'I').replace(/[^A-Z0-9:]/g,'');}
+function wordType(value){const t=normalizeOcrWord(value);if(/^(BIG|BB|B1G|B!G)$/.test(t)||/^B[I1]G$/.test(t))return 'BIG';if(/^(REG|RB|RBG|R3G)$/.test(t)||/^R[E3]G$/.test(t))return 'REG';return null;}
+function tsvWords(tsv){
+  const lines=tsv.split(/\r?\n/),out=[];
+  for(let i=1;i<lines.length;i++){const c=lines[i].split('\t');if(c.length<12||Number(c[0])!==5)continue;const text=(c[11]||'').trim();if(!text)continue;const left=Number(c[6]),top=Number(c[7]),width=Number(c[8]),height=Number(c[9]),conf=Number(c[10]);if(![left,top,width,height].every(Number.isFinite))continue;out.push({text,left,top,width,height,cx:left+width/2,cy:top+height/2,conf:Number.isFinite(conf)?conf:0});}
+  return out;
+}
+function clusterWordsIntoRows(words){
+  if(!words.length)return [];
+  const sorted=[...words].sort((a,b)=>a.cy-b.cy),heights=sorted.map(w=>w.height).filter(n=>n>0).sort((a,b)=>a-b),med=heights[Math.floor(heights.length/2)]||18,tolerance=Math.max(9,med*.78),rows=[];
+  sorted.forEach(w=>{let row=rows.find(r=>Math.abs(r.cy-w.cy)<=tolerance);if(!row){row={cy:w.cy,words:[]};rows.push(row);}row.words.push(w);row.cy=row.words.reduce((n,x)=>n+x.cy,0)/row.words.length;});
+  rows.forEach(r=>r.words.sort((a,b)=>a.cx-b.cx));
+  return rows.sort((a,b)=>a.cy-b.cy);
+}
+function numericToken(word){
+  let t=normalizeOcrWord(word.text).replace(/[OQD]/g,'0').replace(/[Il|]/g,'1').replace(/[S]/g,'5');
+  if(/^\d{1,4}$/.test(t))return Number(t);
+  // 14:52等の時刻は数字として扱わない
+  return null;
+}
+function parseOcrRows(tsv,site,imageIndex){
+  const words=tsvWords(tsv),groups=clusterWordsIntoRows(words),rows=[],diagnostics=[];
+  groups.forEach((group,idx)=>{
+    const typeWords=group.words.map(w=>({word:w,type:wordType(w.text)})).filter(x=>x.type);
+    const nums=group.words.map(w=>({word:w,value:numericToken(w)})).filter(x=>x.value!==null&&x.value>=0&&x.value<=9999);
+    // 履歴表以外（ステータスバー等）の文字列を誤って履歴行として採用しない。
+    // BIG/REG（ウイングはBB/RB）が含まれる行だけを履歴候補とする。
+    if(!typeWords.length)return;
+    const type=typeWords.length?typeWords[typeWords.length-1].type:null;
+    const orderedNums=nums.sort((a,b)=>a.word.cx-b.word.cx);
+    // キング：セル単位処理を別関数で実施。
+    // ウイング：回数はOCRせず、上からの行順で採番。時刻（HH:MM）はnumericTokenで除外し、
+    // 種別の直前にある最も右側の数値をスタートGとして扱う。
+    const typeWord=typeWords.length?typeWords[typeWords.length-1].word:null;
+    const gameCandidates=orderedNums.filter(x=>!typeWord||x.word.cx<typeWord.cx);
+    const gameEntry=gameCandidates.length?gameCandidates[gameCandidates.length-1]:null;
+    const game=gameEntry?gameEntry.value:null;
+    let count=null;
+    const problems=[];
+    if(game===null)problems.push(site==='wing'?'スタートG':'ゲーム数');
+    if(!type)problems.push('種別');
+    // キング・ウイングとも回数欄のOCR結果は採用せず、表示順から採番する。
+    // キングは後段で下から上、ウイングは上から下に並べ替えてから連番を設定。
+    if(site==='king')count=-1;
+    const confidence=[...(gameEntry?[gameEntry.word.conf]:[]),...(typeWords.length?[typeWords[0].word.conf]:[])];
+    const lowConfidence=confidence.some(c=>c>=0&&c<35);
+    rows.push({game,type,count,y:group.cy,imageIndex,raw:group.words.map(w=>w.text).join(' '),problems,lowConfidence});
+  });
+  // 画面上の上から順に回数の並びを確認し、サイトごとの表示方向で並べ替える
+  rows.sort((a,b)=>site==='king'?b.y-a.y:a.y-b.y);
+  rows.forEach((r,i)=>{
+    if(r.count===-1){r.count=i+1;diagnostics.push({level:'warning',message:`画像${imageIndex+1}・${i+1}行目：回数欄を直接認識できなかったため、表の行順から${i+1}回目と設定しました。回数を確認してください。`});}
+    if(site==='wing')r.count=i+1;
+    if(r.problems.length)diagnostics.push({level:'error',message:`画像${imageIndex+1}・${i+1}行目${r.count!==null?`（回数 ${r.count}）`:''}：${r.problems.join('・')}が読み取れませんでした。認識文字：「${r.raw}」`});
+    else if(r.lowConfidence)diagnostics.push({level:'warning',message:`画像${imageIndex+1}・${i+1}行目（回数 ${r.count}）：認識精度が低い項目があります。ゲーム数・種別を確認してください。`});
+  });
+  if(!rows.length)diagnostics.push({level:'error',message:`画像${imageIndex+1}：履歴行を検出できませんでした。表全体が写っているか、サイト選択が正しいか確認してください。`});
+  return {rows,diagnostics,wordCount:words.length};
+}
+// キング専用：赤い罫線から表のセルを検出し、ゲーム数・種別を別々にOCRする
+function isKingGridRed(r,g,b){return r>80&&r>g*1.15&&r>b*1.15;}
+function clusterLinePositions(values){
+  if(!values.length)return [];
+  const groups=[];let current=[values[0]];
+  for(let i=1;i<values.length;i++){
+    if(values[i]<=current[current.length-1]+2)current.push(values[i]);
+    else{groups.push(current);current=[values[i]];}
+  }
+  groups.push(current);
+  return groups.map(a=>Math.round(a.reduce((x,y)=>x+y,0)/a.length));
+}
+function detectKingTableGrid(canvas){
+  const ctx=canvas.getContext('2d',{willReadFrequently:true}),w=canvas.width,h=canvas.height;
+  const data=ctx.getImageData(0,0,w,h).data;
+  const horizontal=[],vertical=[];
+  for(let y=0;y<h;y++){
+    let n=0;for(let x=0;x<w;x++){const k=(y*w+x)*4;if(isKingGridRed(data[k],data[k+1],data[k+2]))n++;}
+    if(n>=w*.58)horizontal.push(y);
+  }
+  const ys=clusterLinePositions(horizontal);
+  if(ys.length<3)throw new Error('キングの赤い横罫線を十分に検出できませんでした。表全体が写るように撮影してください。');
+  const top=ys[0],bottom=ys[ys.length-1],tableH=bottom-top;
+  for(let x=0;x<w;x++){
+    let n=0;for(let y=top;y<=bottom;y++){const k=(y*w+x)*4;if(isKingGridRed(data[k],data[k+1],data[k+2]))n++;}
+    if(n>=tableH*.52)vertical.push(x);
+  }
+  const xs=clusterLinePositions(vertical);
+  if(xs.length<5)throw new Error('キングの縦罫線を検出できませんでした。表の左右が切れていない画像を使用してください。');
+  // 罫線が余分に検出された場合も、表の中央付近にある4列を画面幅比で選ぶ
+  const left=xs[0],right=xs[xs.length-1];
+  const expected=[left,(left+right)*.25,(left+right)*.50,(left+right)*.75,right];
+  const chosen=expected.map((target,i)=>xs.reduce((best,x)=>Math.abs(x-target)<Math.abs(best-target)?x:best,xs[0]));
+  const unique=[...new Set(chosen)].sort((a,b)=>a-b);
+  if(unique.length!==5)throw new Error('キングの列境界を特定できませんでした。');
+  const rowPairs=[];
+  for(let i=0;i<ys.length-1;i++){
+    const rh=ys[i+1]-ys[i];
+    if(rh>tableH/Math.max(ys.length-1,1)*.55&&rh<tableH/Math.max(ys.length-1,1)*1.55)rowPairs.push([ys[i],ys[i+1]]);
+  }
+  if(!rowPairs.length)throw new Error('キングの履歴行を検出できませんでした。');
+  return {xs:unique,rows:rowPairs,width:w,height:h};
+}
+function cropKingCell(source,x1,y1,x2,y2,scale=3){
+  const padX=Math.max(3,Math.round((x2-x1)*.06)),padY=Math.max(3,Math.round((y2-y1)*.10));
+  const sx=Math.max(0,Math.round(x1+padX)),sy=Math.max(0,Math.round(y1+padY));
+  const sw=Math.max(1,Math.round(x2-x1-2*padX)),sh=Math.max(1,Math.round(y2-y1-2*padY));
+  const c=document.createElement('canvas');c.width=Math.round(sw*scale);c.height=Math.round(sh*scale);
+  const cx=c.getContext('2d',{willReadFrequently:true});cx.fillStyle='#fff';cx.fillRect(0,0,c.width,c.height);cx.imageSmoothingEnabled=true;cx.imageSmoothingQuality='high';cx.drawImage(source,sx,sy,sw,sh,0,0,c.width,c.height);
+  // 白黒化して小さな数字のコントラストを確保
+  const im=cx.getImageData(0,0,c.width,c.height),d=im.data;
+  for(let i=0;i<d.length;i+=4){const gray=.299*d[i]+.587*d[i+1]+.114*d[i+2];const v=gray<175?0:255;d[i]=d[i+1]=d[i+2]=v;d[i+3]=255;}
+  cx.putImageData(im,0,0);
+  // セル内の余白を詰める。特に「27」のような2桁数字で後ろの桁が落ちるのを防ぐ。
+  const pixels=cx.getImageData(0,0,c.width,c.height).data;let minX=c.width,minY=c.height,maxX=-1,maxY=-1;
+  for(let y=0;y<c.height;y++)for(let x=0;x<c.width;x++){const k=(y*c.width+x)*4;if(pixels[k]<200){if(x<minX)minX=x;if(x>maxX)maxX=x;if(y<minY)minY=y;if(y>maxY)maxY=y;}}
+  if(maxX>=minX&&maxY>=minY){const pad=Math.max(5,Math.round(c.height*.035)),x1=Math.max(0,minX-pad),y1=Math.max(0,minY-pad),x2=Math.min(c.width,maxX+pad+1),y2=Math.min(c.height,maxY+pad+1);const tight=document.createElement('canvas');tight.width=x2-x1;tight.height=y2-y1;tight.getContext('2d').drawImage(c,x1,y1,tight.width,tight.height,0,0,tight.width,tight.height);return tight;}
+  return c;
+}
+async function recognizeKingCell(worker,canvas,kind){
+  if(kind==='game')await worker.setParameters({tessedit_pageseg_mode:'8',tessedit_char_whitelist:'0123456789'});
+  else await worker.setParameters({tessedit_pageseg_mode:'8',tessedit_char_whitelist:'BIGREG'});
+  const result=await worker.recognize(canvas),raw=String(result.data.text||'').trim().toUpperCase();
+  const confidence=Number(result.data.confidence)||0;
+  if(kind==='game'){
+    const digits=raw.replace(/[^0-9]/g,'');
+    if(!digits)return {value:null,raw,confidence};
+    const value=Number(digits);return {value:Number.isInteger(value)&&value<=9999?value:null,raw,confidence};
+  }
+  const compact=raw.replace(/[^A-Z]/g,'');
+  let value=null;if(/BIG|B1G/.test(compact))value='BIG';else if(/REG|R3G/.test(compact))value='REG';
+  return {value,raw,confidence};
+}
+async function recognizeKingGrid(canvas,worker,imageIndex){
+  const grid=detectKingTableGrid(canvas),rows=[],diagnostics=[];
+  // 表の一番下が初当たり1回目。回数欄そのものはOCRしない。
+  const ordered=[...grid.rows].reverse();
+  for(let i=0;i<ordered.length;i++){
+    const [y1,y2]=ordered[i],count=i+1;
+    const gameCanvas=cropKingCell(canvas,grid.xs[2],y1,grid.xs[3],y2,3.5);
+    const typeCanvas=cropKingCell(canvas,grid.xs[3],y1,grid.xs[4],y2,3.5);
+    const gameResult=await recognizeKingCell(worker,gameCanvas,'game');
+    const typeResult=await recognizeKingCell(worker,typeCanvas,'type');
+    const problems=[];if(gameResult.value===null)problems.push('ゲーム数');if(typeResult.value===null)problems.push('種別');
+    const raw=`ゲーム数[${gameResult.raw||'認識なし'}] 種別[${typeResult.raw||'認識なし'}]`;
+    rows.push({game:gameResult.value,type:typeResult.value,count,y:y2,imageIndex,raw,problems,lowConfidence:gameResult.confidence<35||typeResult.confidence<35});
+    if(problems.length)diagnostics.push({level:'error',message:`画像${imageIndex+1}・${count}回目：${problems.join('・')}が読み取れませんでした。${raw}`});
+    else if(gameResult.confidence<35||typeResult.confidence<35)diagnostics.push({level:'warning',message:`画像${imageIndex+1}・${count}回目：認識精度が低いため、ゲーム数・種別を確認してください。`});
+  }
+  if(rows.length!==12)diagnostics.push({level:'warning',message:`画像${imageIndex+1}：${rows.length}行を検出しました。表示範囲内の履歴件数と一致するか確認してください。`});
+  return {rows,diagnostics,wordCount:rows.length*2};
+}
+
+// ウイング専用：青い見出し行と交互色の履歴行から表のセルを検出する
+function detectWingTableGrid(canvas){
+  const ctx=canvas.getContext('2d',{willReadFrequently:true}),w=canvas.width,h=canvas.height;
+  const data=ctx.getImageData(0,0,w,h).data;
+  const blueCounts=new Array(h).fill(0);
+  for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+    const k=(y*w+x)*4,r=data[k],g=data[k+1],b=data[k+2];
+    if(b>75&&b>r*1.35&&b>g*1.15)blueCounts[y]++;
+  }
+  const peak=Math.max(...blueCounts),threshold=Math.max(40,peak*.35);
+  let headerRows=[];for(let y=0;y<h;y++)if(blueCounts[y]>=threshold)headerRows.push(y);
+  if(!headerRows.length||peak<Math.min(100,w*.25))throw new Error('ウイングの青い見出し行を検出できませんでした。表全体が写る画像を使用してください。');
+  const minY=headerRows[0],maxY=headerRows[headerRows.length-1];
+  let minX=w,maxX=-1;
+  for(let y=minY;y<=maxY;y++)for(let x=0;x<w;x++){
+    const k=(y*w+x)*4,r=data[k],g=data[k+1],b=data[k+2];
+    if(b>75&&b>r*1.35&&b>g*1.15){if(x<minX)minX=x;if(x>maxX)maxX=x;}
+  }
+  if(maxX<=minX||maxY<=minY)throw new Error('ウイングの青い見出し行を検出できませんでした。表全体が写る画像を使用してください。');
+  const left=minX,right=maxX+1,headerBottom=maxY+1,tableWidth=right-left;
+  // 見出しの列名に対応した相対位置。回数・時刻・スタート・出玉・種別の5列。
+  const xBounds=[left,left+tableWidth*.16,left+tableWidth*.34,left+tableWidth*.58,left+tableWidth*.80,right];
+  // 左端の回数セル内側をサンプルし、黒／灰色の交互背景の切り替わりから各行を検出
+  const sampleX=Math.min(w-1,left+7),transitions=[];
+  const lumAt=y=>{const k=(y*w+sampleX)*4;return (data[k]*.299+data[k+1]*.587+data[k+2]*.114);};
+  let prev=lumAt(Math.min(h-1,headerBottom+2))>18;
+  for(let y=headerBottom+3;y<h;y++){
+    const cur=lumAt(y)>18;
+    if(cur!==prev){transitions.push(y);prev=cur;}
+  }
+  const boundaries=[headerBottom,...transitions];
+  const heights=[];for(let i=1;i<boundaries.length;i++){const d=boundaries[i]-boundaries[i-1];if(d>=Math.max(12,canvas.width*.025)&&d<=canvas.width*.15)heights.push(d);}
+  if(heights.length<2)throw new Error('ウイングの履歴行を検出できませんでした。表の見出しから最終行まで写してください。');
+  const sorted=[...heights].sort((a,b)=>a-b),median=sorted[Math.floor(sorted.length/2)];
+  const rows=[];
+  for(let i=1;i<boundaries.length;i++){
+    const y1=boundaries[i-1],y2=boundaries[i],rh=y2-y1;
+    if(rh>=median*.65&&rh<=median*1.4)rows.push([y1,y2]);
+  }
+  if(!rows.length)throw new Error('ウイングの履歴行を区切れませんでした。');
+  return {xBounds,rows,left,right,headerBottom,median};
+}
+function cropWingCell(source,x1,y1,x2,y2,kind,scale=4){
+  const padX=Math.max(2,Math.round((x2-x1)*.10)),padY=Math.max(2,Math.round((y2-y1)*.12));
+  const sx=Math.max(0,Math.round(x1+padX)),sy=Math.max(0,Math.round(y1+padY));
+  const sw=Math.max(1,Math.round(x2-x1-2*padX)),sh=Math.max(1,Math.round(y2-y1-2*padY));
+  const c=document.createElement('canvas');c.width=Math.round(sw*scale);c.height=Math.round(sh*scale);
+  const cx=c.getContext('2d',{willReadFrequently:true});cx.drawImage(source,sx,sy,sw,sh,0,0,c.width,c.height);
+  const im=cx.getImageData(0,0,c.width,c.height),d=im.data;
+  if(kind==='type'){
+    // BB（橙）とRB（水色）は文字色が異なるため、輝度ではなくバッジ背景色を検出する。
+    // バッジ色の領域を白、それ以外（白いBB文字／暗いRB文字）を黒にして、両方を同じ白黒画像に正規化。
+    let bx=c.width,by=c.height,ex=-1,ey=-1;
+    const badgeMask=new Uint8Array(c.width*c.height);
+    for(let y=0;y<c.height;y++)for(let x=0;x<c.width;x++){
+      const i=(y*c.width+x)*4,r=d[i],g=d[i+1],b=d[i+2];
+      const orange=r>135&&g<155&&b<115&&r>g*1.25;
+      const cyan=g>135&&b>135&&g>r*1.35&&b>r*1.35;
+      if(orange||cyan){badgeMask[y*c.width+x]=1;if(x<bx)bx=x;if(x>ex)ex=x;if(y<by)by=y;if(y>ey)ey=y;}
+    }
+    if(ex>=bx&&ey>=by){
+      const pad=Math.max(5,Math.round(c.height*.04)),x0=Math.max(0,bx-pad),y0=Math.max(0,by-pad),x1=Math.min(c.width,ex+pad+1),y1=Math.min(c.height,ey+pad+1);
+      const out=document.createElement('canvas');out.width=x1-x0;out.height=y1-y0;
+      const ox=out.getContext('2d',{willReadFrequently:true}),oi=ox.createImageData(out.width,out.height),od=oi.data;
+      for(let y=y0;y<y1;y++)for(let x=x0;x<x1;x++){
+        const src=(y*c.width+x)*4,dst=((y-y0)*out.width+(x-x0))*4;
+        const v=badgeMask[y*c.width+x]?255:0;
+        od[dst]=od[dst+1]=od[dst+2]=v;od[dst+3]=255;
+      }
+      ox.putImageData(oi,0,0);
+      return out;
+    }
+    // バッジ色が検出できない場合は、通常の二値化に進まず元画像を返して誤変換を避ける。
+    return c;
+  }
+  for(let i=0;i<d.length;i+=4){
+    const gray=.299*d[i]+.587*d[i+1]+.114*d[i+2];
+    // 暗い行背景を白、白いスタート数字を黒に反転
+    const v=gray>175?0:255;
+    d[i]=d[i+1]=d[i+2]=v;d[i+3]=255;
+  }
+  cx.putImageData(im,0,0);
+  // 黒い文字領域に合わせて余白を詰める
+  const px=cx.getImageData(0,0,c.width,c.height).data;let bx=c.width,by=c.height,ex=-1,ey=-1;
+  for(let y=0;y<c.height;y++)for(let x=0;x<c.width;x++){const k=(y*c.width+x)*4;if(px[k]<100){if(x<bx)bx=x;if(x>ex)ex=x;if(y<by)by=y;if(y>ey)ey=y;}}
+  if(ex>=bx&&ey>=by){const pad=Math.max(5,Math.round(c.height*.05)),x=Math.max(0,bx-pad),y=Math.max(0,by-pad),xx=Math.min(c.width,ex+pad+1),yy=Math.min(c.height,ey+pad+1),out=document.createElement('canvas');out.width=xx-x;out.height=yy-y;out.getContext('2d').drawImage(c,x,y,out.width,out.height,0,0,out.width,out.height);return out;}
+  return c;
+}
+async function recognizeWingGame(worker,cell){
+  await worker.setParameters({tessedit_pageseg_mode:'8',tessedit_char_whitelist:'0123456789'});
+  const result=await worker.recognize(cell),raw=String(result.data.text||'').trim();
+  const digits=raw.replace(/[^0-9]/g,'');
+  const value=digits?Number(digits):null;
+  return {value:Number.isInteger(value)&&value>=0&&value<=9999?value:null,raw,confidence:Number(result.data.confidence)||0};
+}
+async function recognizeWingType(worker,cell){
+  await worker.setParameters({tessedit_pageseg_mode:'8',tessedit_char_whitelist:'BBRR'});
+  const result=await worker.recognize(cell),raw=String(result.data.text||'').trim().toUpperCase();
+  const compact=raw.replace(/[^A-Z]/g,'');
+  let value=null;
+  if(/BB/.test(compact)||/^B+$/.test(compact))value='BIG';
+  else if(/RB/.test(compact)||/^R+B+$/.test(compact))value='REG';
+  return {value,raw,confidence:Number(result.data.confidence)||0};
+}
+async function recognizeWingGrid(canvas,worker,imageIndex){
+  const grid=detectWingTableGrid(canvas),rows=[],diagnostics=[];
+  for(let i=0;i<grid.rows.length;i++){
+    const [y1,y2]=grid.rows[i],count=i+1;
+    // スタート列だけを切り出す。時刻列・出玉列・回数列はOCRしない。
+    const gameCell=cropWingCell(canvas,grid.xBounds[2],y1,grid.xBounds[3],y2,'game',4);
+    const typeCell=cropWingCell(canvas,grid.xBounds[4],y1,grid.xBounds[5],y2,'type',4);
+    const gameResult=await recognizeWingGame(worker,gameCell);
+    const typeResult=await recognizeWingType(worker,typeCell);
+    const problems=[];if(gameResult.value===null)problems.push('スタートG');if(typeResult.value===null)problems.push('種別');
+    const raw=`スタート[${gameResult.raw||'認識なし'}] 種別[${typeResult.raw||'認識なし'}]`;
+    const lowConfidence=gameResult.confidence<35||typeResult.confidence<35;
+    rows.push({game:gameResult.value,type:typeResult.value,count,y:(y1+y2)/2,imageIndex,raw,problems,lowConfidence});
+    if(problems.length)diagnostics.push({level:'error',message:`画像${imageIndex+1}・${count}回目：${problems.join('・')}が読み取れませんでした。${raw}`});
+    else if(lowConfidence)diagnostics.push({level:'warning',message:`画像${imageIndex+1}・${count}回目：認識精度が低いため、スタートG・種別を確認してください。`});
+  }
+  if(rows.length===0)diagnostics.push({level:'error',message:`画像${imageIndex+1}：ウイングの履歴行を検出できませんでした。`});
+  return {rows,diagnostics,wordCount:rows.length*2};
+}
+
+async function recognizeHistoryImages(){
+  const files=[...document.getElementById('history-images').files];
+  if(!files.length){alert('スクリーンショットを選択してください。');return;}
+  const btn=document.getElementById('recognize-button');btn.disabled=true;btn.textContent='読み取り中…';
+  importedRows=[];importDiagnostics=[];document.getElementById('import-preview-wrap').hidden=true;showImportDiagnostics([]);setImportProgress(0);
+  try{
+    setImportStatus('画像を確認し、文字読み取りエンジンを準備しています…');const worker=await getOcrWorker();let totalWords=0;
+    for(let i=0;i<files.length;i++){
+      setImportStatus(`${i+1}/${files.length}枚目を解析中…`);
+      let canvas;try{canvas=await makeOcrImage(files[i]);}catch(e){importDiagnostics.push({level:'error',message:`画像${i+1}：${e.message}`});continue;}
+      let parsed;
+      if(importSite==='king')parsed=await recognizeKingGrid(canvas,worker,i);
+      else parsed=await recognizeWingGrid(canvas,worker,i);
+      importedRows.push(...parsed.rows);importDiagnostics.push(...parsed.diagnostics);totalWords+=parsed.wordCount;setImportProgress(((i+1)/files.length)*100);
+    }
+    if(importSite==='king')importedRows.sort((a,b)=>a.imageIndex-b.imageIndex||a.count-b.count);else importedRows.sort((a,b)=>a.imageIndex-b.imageIndex||a.y-b.y);
+    const counts=importedRows.map(r=>r.count).filter(n=>n!==null),seen=new Set();
+    counts.forEach(n=>{if(seen.has(n))importDiagnostics.push({level:'error',message:`回数 ${n} が重複して読み取られています。画像の重複や行の誤認識を確認してください。`});seen.add(n);});
+    const errors=importDiagnostics.filter(d=>d.level==='error').length;
+    if(importedRows.length)renderImportPreview();showImportDiagnostics(importDiagnostics);
+    if(!importedRows.length)setImportStatus(`履歴を検出できませんでした。画像の向き・画質・選択サイトを確認してください。`);
+    else if(errors)setImportStatus(`${importedRows.length}行を検出しましたが、${errors}件のエラーがあります。エラーを修正してから履歴に反映してください。`);
+    else setImportStatus(`${importedRows.length}行を検出しました。読み取り結果を確認してください。`);
+  }catch(e){setImportStatus('読み取り処理でエラーが発生しました：'+(e.message||e));showImportDiagnostics([{level:'error',message:e.message||'画像処理を開始できませんでした。'}]);}
+  finally{btn.disabled=false;btn.textContent='画像を読み取る';}
+}
+function parseTextHistoryImport(){
+  const input=document.getElementById('history-text-import').value;
+  if(!input.trim()){alert('取り込むテキストを貼り付けてください。');return;}
+  importedRows=[];importDiagnostics=[];importTextHasErrors=false;
+  const lines=input.split(/\r?\n/);
+  const parsed=[];
+  lines.forEach((raw,index)=>{
+    const line=raw.trim();if(!line)return;
+    // 1行につき「ゲーム数 種別」。区切り記号・G表記・全角空白にも対応。
+    const normalized=line.toUpperCase().replace(/[：:，,、]/g,' ').replace(/[　\t]+/g,' ').replace(/([0-9])G\b/g,'$1');
+    const typeMatch=normalized.match(/\b(BIG|REG|BB|RB)\b/);
+    const numberMatches=[...normalized.matchAll(/(?:^|\s)(\d{1,4})(?=\s|$)/g)];
+    if(!typeMatch||numberMatches.length!==1){
+      importDiagnostics.push({level:'error',message:`テキスト${index+1}行目を解析できません：「${raw}」。例：584 REG`});return;
+    }
+    const game=Number(numberMatches[0][1]);
+    if(!Number.isInteger(game)||game<0||game>9999){importDiagnostics.push({level:'error',message:`テキスト${index+1}行目のゲーム数が範囲外です：「${raw}」`});return;}
+    const type=/^(BIG|BB)$/.test(typeMatch[1])?'BIG':'REG';
+    parsed.push({game,type,count:parsed.length+1,y:parsed.length,imageIndex:0,raw,problems:[],lowConfidence:false,source:'text'});
+  });
+  importedRows=parsed;importTextHasErrors=importDiagnostics.some(d=>d.level==='error');
+  if(!parsed.length){showImportDiagnostics(importDiagnostics);setImportStatus('取り込める履歴がありません。入力形式を確認してください。');document.getElementById('import-preview-wrap').hidden=true;return;}
+  showImportDiagnostics(importDiagnostics);
+  renderImportPreview();
+  setImportStatus(`${parsed.length}件を解析しました。古い履歴から新しい履歴の順です。内容を確認してから反映してください。${importDiagnostics.length?` 解析エラー：${importDiagnostics.length}件`:''}`);
+}
+
+function renderImportPreview(){
+  const body=document.getElementById('import-preview');body.innerHTML='';
+  importedRows.forEach((r,i)=>{
+    const tr=document.createElement('tr');
+    const gameValue=r.game===null?'':r.game;
+    tr.innerHTML=`<td><input type="checkbox" checked aria-label="${i+1}件目を取り込む"></td><td>${r.count===null?'不明':r.count}</td><td><input class="${r.game===null?'invalid':''}" type="number" min="0" max="9999" value="${gameValue}" placeholder="要確認" aria-label="ゲーム数"></td><td><select class="${r.type===null?'invalid':''}" aria-label="種別"><option value="">選択</option><option value="BIG" ${r.type==='BIG'?'selected':''}>BIG</option><option value="REG" ${r.type==='REG'?'selected':''}>REG</option></select></td><td>${r.source==='text'?'テキスト':r.imageIndex+1}</td>`;
+    body.appendChild(tr);
+  });
+  document.getElementById('import-count').textContent=`${importedRows.length}件`;
+  document.getElementById('import-preview-wrap').hidden=false;
+}
+function applyImportedHistory(mode){
+  if(importTextHasErrors){alert('解析できなかったテキスト行があります。エラーを修正してから、もう一度テキストを解析してください。');return;}
+  if(importDiagnostics.some(d=>d.level==='error'&&d.message.includes('重複'))) {alert('回数の重複があるため反映できません。画像や読み取り結果を確認してください。');return;}
+  const trs=[...document.querySelectorAll('#import-preview tr')];const rows=[];
+  for(let i=0;i<trs.length;i++){
+    const cells=trs[i].querySelectorAll('td');if(!cells[0].querySelector('input').checked)continue;
+    const gameInput=cells[2].querySelector('input'),type=cells[3].querySelector('select');
+    const game=Number(gameInput.value),typeValue=type.value;
+    if(gameInput.value.trim()===''||!Number.isInteger(game)||game<0||game>9999){alert(`${i+1}件目のゲーム数が未入力または不正です。修正してください。`);gameInput.focus();return;}
+    if(!typeValue){alert(`${i+1}件目のBIG／REGが未選択です。修正してください。`);type.focus();return;}
+    rows.push({game,type:typeValue});
+  }
+  if(!rows.length){alert('取り込む履歴がありません。');return;}
+  if(mode==='replace'&&!confirm(`現在の履歴${histories.length}件を削除し、読み込んだ${rows.length}件に置き換えます。よろしいですか？`))return;
+  if(mode==='replace')histories=[];
+  const key=document.getElementById('model-select').value,config=MODEL_CONFIG[key];
+  const big=Number(document.getElementById('big-payout').value),reg=Number(document.getElementById('reg-payout').value);
+  if(!Number.isFinite(big)||big<0||!Number.isFinite(reg)||reg<0){alert('BIG/REG獲得枚数の設定を確認してください。');return;}
+  rows.forEach(r=>histories.push({id:Date.now()+Math.random(),type:'bonus',modelKey:key,modelName:config.name,bonusType:r.type,initialG:r.game,addG:r.type==='BIG'?config.bigAdd:config.regAdd,payout:r.type==='BIG'?big:reg,isInitialHit:r.game>32}));
+  saveLocal();render();setImportStatus(`${rows.length}件の履歴を${mode==='append'?'追加':'置き換え'}ました。`);document.getElementById('import-preview-wrap').hidden=true;
+}
+
+</script>
 <div class="card" id="hibiscus-patterns">
   <details class="memo-details">
     <summary aria-controls="hibiscus-patterns-content"><h2>ハイビスカスの光り方一覧表</h2><span class="memo-arrow" aria-hidden="true">▼</span></summary>
     <div class="memo-content" id="hibiscus-patterns-content">
-      <p class="hibi-note">沖ドキ！GOLDの点灯パターンとモード示唆の参考一覧。</p>
+      <p class="hibi-note">沖ドキ！GOLDの点灯パターンとモード示唆の参考一覧。示唆は次回モードについての情報です。</p>
       <div class="hibi-wrap">
         <table class="hibi-table">
           <thead><tr><th>点灯パターン</th><th>示唆</th></tr></thead>
@@ -771,18 +1172,42 @@ function escapeHtml(str){return String(str).replace(/[&<>"']/g,c=>({'&':'&amp;',
 
 <div class="card" id="change-log">
   <details class="memo-details">
-    <summary aria-controls="change-log-content"><h2>更新履歴 <span class="version-label">ver.21</span></h2><span class="memo-arrow" aria-hidden="true">▼</span></summary>
+    <summary aria-controls="change-log-content"><h2>更新履歴 <span class="version-label">ver.29</span><span class="update-time">2026年11月6日</span></h2><span class="memo-arrow" aria-hidden="true">▼</span></summary>
     <div class="memo-content" id="change-log-content">
   <ul class="small" style="padding-left:20px;line-height:1.7">
     <li>HTMLのタイトルと見出しを「沖ドキ考察｜GPT」に変更。</li>
-    <li>全体・区間別グラフの横軸を累計G数に変更し、500G刻みの目盛りを追加。</li>
+    <li>「履歴を書き出し」ボタンと、未使用となる履歴書き出し処理を削除。</li>
+    <li>全体・区間別グラフの横軸を累計G数に変更し、500G刻みの目盛りを追加（表示が混み合う場合はラベルのみ1,000G刻み）。</li>
     <li>有利区間切断候補の参考判定を追加。GOLDは1,600〜2,000G帯、BLACKは2,000・2,600・3,000・3,600・4,000G付近、GORGEOUSは2,600・3,000・3,600・4,000G付近を候補として表示。</li>
-    <li>設定判別機能を追加。チェックを付けた初当たり履歴から確率を算出し、設定1・2・3・5・6を推定。</li>
-    <li>数字パッドでの入力・履歴追加後に入力欄へ自動フォーカスしないよう変更。</li>
-    <li>区切り線に長押しドラッグ移動を追加。</li>
-    <li>登録済みのボーナス履歴を機種別に一括変更する機能を追加。</li>
-    <li>ハイビスカスの光り方一覧表を追加。</li>
-    <li><strong>[ver.21]</strong> スクショ・テキスト一括インポート機能のパース処理を強化。データ行に時刻（<code>XX:XX</code>）が含まれていても自動で無視し、右側の種別と直前のゲーム数を確実に逆算して読み取るよう修正。</li>
+    <li>有利区間切断候補と差枚数切断候補に該当するボーナス履歴の初当たりG欄に、それぞれ色分けしたマークを追加。</li>
+    <li>推定差枚が＋2,098〜＋2,250枚の範囲を通過した場合、「差枚数切断の可能性が高い」と表示。</li>
+    <li>設定判別機能を追加。チェックを付けた初当たり履歴から初当たりBIG・REG実績確率を表示し、機種別の初当たり確率とチェリーB実測値から設定1・2・3・5・6を推定。</li>
+    <li>初当たりとして集計するかをボーナス追加時および履歴表から切り替え可能にし、連チャン中のボーナスを設定判別から除外できるよう変更。</li>
+    <li>チェリーB回数とカウント対象ゲーム数の手入力欄を追加し、機種別に保存。全リセット時はチェリーBカウントも消去。</li>
+    <li>設定判別の初当たり集計を修正。前回ボーナス後32G以内のボーナスは連チャン扱いとして自動除外し、履歴表でも対象チェックを無効化。</li>
+    <li>初当たりG数入力欄の直下に数字パッドを追加。数字入力・1文字削除・全消去を可能に。</li>
+    <li>数字パッドでの入力・履歴追加後に入力欄へ自動フォーカスしないよう変更。スマホのソフトウェアキーボードが勝手に開く問題を防止。</li>
+    <li>「全体の出玉推移」を「設定判別（初当たり＋チェリーB）」より上に移動。</li>
+    <li>区切り線に長押しドラッグ移動を追加。履歴内の任意位置へ移動でき、区切り線の上下ボタン操作を廃止。</li>
+    <li>既存の出玉・差枚数計算式、履歴保存、全リセット機能は変更せず維持。</li>
+    <li>検索エンジン向けに noindex,nofollow を指定。6号機規制メモと更新履歴を折り畳み式に変更。</li>
+    <li>履歴表の「区間加算後G」が2,000G以上の初当たりから始まる連チャンを判定。初当たりを含めて6連以上・獲得枚数合計1,000枚超の場合、初当たり後の32G以内のボーナス履歴のみをレインボー表示。</li>
+    <li>登録済みのボーナス履歴を機種別に一括変更する機能を追加。初当たりG数・BIG/REG・獲得枚数・履歴順を維持し、機種名と機種別のボーナス加算Gを変更。</li>
+    <li>更新履歴にバージョン表記を追加。以後の更新ごとにverを1ずつ加算。</li>
+    <li>ハイビスカスの光り方一覧表を追加。点灯パターン別の示唆と分かりづらいパターンの特徴を、折り畳み式で確認できるように変更。</li>
+    <li>更新履歴の見出しに、バージョンと最終更新日時（年月日・時分）を並べて表示するよう変更。</li>
+    <li>キング・ウイングのスクリーンショット読み取りを再構築。OCRの単語を行単位にまとめ、端末の画像サイズに合わせて処理する方式に変更。</li>
+    <li>回数・ゲーム数・BIG/REGの読み取り状況を個別に確認し、未認識・重複・欠番・低信頼のエラー／警告を表示する機能を追加。</li>
+    <li>読み取りに失敗したゲーム数・種別を確認画面で手動修正できるよう変更。未入力・不正値のまま履歴へ反映できないよう変更。</li>
+    <li>テキスト一括インポートを追加。1行ごとの「ゲーム数 種別」形式を解析し、画像読み取りと同じ確認・修正画面から履歴へ反映できるよう変更。</li>
+    <li>キングの回数欄がOCRで欠落した場合、表の行順から仮の回数を付けて確認警告を表示するよう変更。履歴表以外のステータス表示を誤検出しにくいよう、BIG／REGを含む行を履歴候補とする方式に変更。</li>
+    <li>キングの画像読み取りをセル単位方式に再構築。赤い罫線から表の行・列を検出し、ゲーム数セルとBIG/REGセルを個別に切り出してOCRする方式に変更。</li>
+    <li>キングの時刻列と回数列をOCR対象から除外し、表の下段から行順で回数を割り当てるよう変更。ゲーム数は数字のみ、種別はBIG/REGのみを認識するよう設定。</li>
+    <li>ウイングの回数欄をOCR対象から除外し、表の上段から行順で回数を自動設定するよう変更。時刻（HH:MM）を数値候補から除外し、種別の直前にある数値をスタートGとして取得するよう変更。</li>
+    <li>ウイングの画像読み取りをセル単位方式に再構築。青い見出し行と交互色の履歴行から表の位置を検出し、スタートG列とBB/RB列のみを個別にOCRする方式に変更。回数は上からの行順で設定し、時刻列・出玉列は読み取り対象から除外。</li>
+    <li>ウイングのBB/RB種別セルの二値化を修正。橙色BBバッジの白文字と水色RBバッジの暗い文字を、バッジ背景色の検出によって共通の白黒画像へ正規化し、REG（RB）も認識できるよう変更。</li>
+    <li>既存の履歴計算式・保存形式・グラフ処理は変更せず維持。</li>
+
   </ul>
     </div>
   </details>
