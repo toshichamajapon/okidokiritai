@@ -22,7 +22,8 @@ canvas{display:block;width:100%;height:180px;background:#181818;border-radius:6p
 .metric .value{font-size:1.05rem;font-weight:700;color:#fff;overflow-wrap:anywhere}
 label{display:block;font-size:.8rem;font-weight:700;color:var(--sub);margin-bottom:4px}
 .form-group{margin-bottom:10px}
-select,input[type=number]{width:100%;padding:10px;border:1px solid var(--border);border-radius:6px;background:#333;color:#fff;font-size:1rem}
+select,input[type=number],textarea{width:100%;padding:10px;border:1px solid var(--border);border-radius:6px;background:#333;color:#fff;font-size:1rem}
+textarea{resize:vertical;min-height:80px}
 .payout{display:flex;gap:10px}.payout .form-group{flex:1;min-width:0}
 .btns{display:flex;gap:8px;margin-top:8px}
 button{cursor:pointer}
@@ -60,7 +61,6 @@ tr.row-sep{background:#ffe066;color:#111}tr.row-sep td{color:#111;font-weight:bo
 .memo-details>summary::-webkit-details-marker{display:none}
 .memo-details>summary h2{margin:0}
 .version-label{font-size:.5em;font-weight:500;color:#aaa;vertical-align:baseline;margin-left:3px}
-.update-time{font-size:.5em;font-weight:500;color:#aaa;vertical-align:baseline;margin-left:6px}
 .memo-details>summary .memo-arrow{flex:0 0 auto;color:var(--sub);font-size:.9rem;transition:transform .18s ease}
 .memo-details[open]>summary .memo-arrow{transform:rotate(180deg)}
 .memo-details>.memo-content{padding-top:12px}
@@ -121,6 +121,21 @@ tr.drop-after td{box-shadow:inset 0 -3px #00d4ff}
   <p class="small" style="margin-top:8px">機種ごとの獲得枚数は推定用の初期値です。実際の獲得枚数に合わせて編集できます。設定は追加時の履歴に保存されます。</p>
 </div>
 
+<!-- スクショテキスト一括インポート機能（堅牢な右側逆算パース対応） -->
+<div class="card">
+  <h2>スクショ・テキスト一括インポート</h2>
+  <p class="small" style="margin-bottom:8px">データサイト等のコピーテキストをここに貼り付けてください。時刻（例: <code>19:40</code>）が含まれていても自動で無視し、右側からゲーム数と種別を正確に読み取ります。</p>
+  <div class="form-group">
+    <textarea id="import-text" placeholder="例:
+12 19:40 27 BIG
+11 19:33 32 BIG
+..."></textarea>
+  </div>
+  <div class="btns">
+    <button type="button" class="action" style="flex:1;padding:10px;background:#0a84ff;font-weight:bold" onclick="parseAndImportText()">テキストを解析・インポート</button>
+  </div>
+</div>
+
 <div class="actionbar">
   <strong>ボーナス履歴</strong>
   <div class="actions">
@@ -170,8 +185,6 @@ tr.drop-after td{box-shadow:inset 0 -3px #00d4ff}
   <p class="notice">推定設定は、提示された設定1・2・3・5・6の数値を等しい事前確率として比較した参考値です。設定4はデータがないため対象外です。試行回数が少ない場合や、初当たりの数え方・チェリーBのカウント対象ゲームが不正確な場合は推定が大きくブレます。BB・RBの公表確率は連チャンを含むため、初当たりだけの設定推測には直接混ぜていません。</p>
 </div>
 
-
-
 <div class="card">
   <h2>有利区間ゲーム数の目安</h2>
   <div class="reggrid">
@@ -208,7 +221,6 @@ tr.drop-after td{box-shadow:inset 0 -3px #00d4ff}
     </div>
   </details>
 </div>
-
 
 <script>
 const MODEL_CONFIG={
@@ -300,6 +312,66 @@ function addHistory(type){
   histories.push({id:Date.now()+Math.random(),type:'bonus',modelKey:key,modelName:config.name,bonusType:type,initialG:g,addG:type==='BIG'?config.bigAdd:config.regAdd,payout,isInitialHit:g>32&&document.getElementById('is-initial-hit').checked});
   saveLocal();render();input.value='';document.getElementById('is-initial-hit').checked=true;document.getElementById('initial-hit-hint').textContent='32G以内のボーナスは連チャン扱いとして、設定判別の初当たりから自動除外します。';
 }
+
+/* 堅牢なテキスト・スクショ解析パース処理（時刻スキップ＆右側逆算） */
+function parseAndImportText(){
+  const text=document.getElementById('import-text').value;
+  if(!text.trim()){alert('解析するテキストを入力してください。');return;}
+  const lines=text.split('
+');
+  const key=document.getElementById('model-select').value;
+  const config=MODEL_CONFIG[key];
+  const big=parseFloat(document.getElementById('big-payout').value);
+  const reg=parseFloat(document.getElementById('reg-payout').value);
+  
+  let importedCount=0;
+  lines.forEach(line=>{
+    const trimmed=line.trim();
+    if(!trimmed)return;
+    
+    // 1. 末尾の BIG / REG を取得
+    const typeMatch=trimmed.match(/(BIG|REG)$/i);
+    if(!typeMatch)return;
+    const bonusType=typeMatch[1].toUpperCase();
+    
+    // 2. スペース区切りでトークン化し、時刻(XX:XX)や種別を除外した純粋な数値を抽出
+    const tokens=trimmed.split(/\s+/);
+    const numericTokens=tokens.filter(t=>{
+      const upper=t.toUpperCase();
+      return !t.includes(':') && upper!=='BIG' && upper!=='REG';
+    });
+    
+    if(numericTokens.length>=1){
+      // 3. 右側（種別直前）をゲーム数、先頭を回数として逆算取得
+      const games=parseInt(numericTokens[numericTokens.length-1],10);
+      if(Number.isFinite(games)&&games>=0){
+        const payout=bonusType==='BIG'?big:reg;
+        histories.push({
+          id:Date.now()+Math.random(),
+          type:'bonus',
+          modelKey:key,
+          modelName:config.name,
+          bonusType:bonusType,
+          initialG:games,
+          addG:bonusType==='BIG'?config.bigAdd:config.regAdd,
+          payout:payout,
+          isInitialHit:games>32
+        });
+        importedCount++;
+      }
+    }
+  });
+  
+  if(importedCount>0){
+    saveLocal();
+    render();
+    document.getElementById('import-text').value='';
+    alert(`${importedCount}件のボーナス履歴をインポートしました！`);
+  }else{
+    alert('有効な履歴データを検出できませんでした。入力フォーマットを確認してください。');
+  }
+}
+
 function addSeparator(){
   const count=histories.filter(x=>x.type==='separator').length+1;
   histories.push({id:Date.now()+Math.random(),type:'separator',name:`区切り線 ${count}`});
@@ -354,7 +426,9 @@ function bulkChangeModel(){
   const count=histories.filter(isBonus).length;
   if(!count){alert('変更できるボーナス履歴がありません。');return;}
   const targetName=config.name;
-  if(!confirm(`登録済みのボーナス履歴 ${count}件を「沖ドキ！${targetName.toUpperCase()}」に一括変更しますか？\n\n初当たりG数・BIG/REG・獲得枚数・履歴順は維持し、機種名とボーナス加算Gを変更します。`))return;
+  if(!confirm(`登録済みのボーナス履歴 ${count}件を「沖ドキ！${targetName.toUpperCase()}」に一括変更しますか？
+
+初当たりG数・BIG/REG・獲得枚数・履歴順は維持し、機種名と機種別のボーナス加算Gを変更します。`))return;
   histories.forEach(item=>{
     if(!isBonus(item))return;
     item.modelKey=key;
@@ -382,8 +456,6 @@ function buildSections(){
   return sections;
 }
 
-// 区間加算後Gが2,000G以上、履歴表の推定機械割が65.0%以上の初当たりから始まる連チャンを判定する。
-// 初当たり行は色付けせず、その後32G以内で続いたボーナス行のみを対象にする。
 function getRainbowBonusIds(){
   const ids=new Set();
   let cumulativeActiveG=0,cumulativeDiff=0,sectionG=0,sectionAddG=0;
@@ -397,7 +469,6 @@ function getRainbowBonusIds(){
     cumulativeActiveG+=initialG+addG;
     cumulativeDiff+=itemDiff(item);
     sectionG+=initialG;sectionAddG+=addG;
-    // 履歴表の「推定機械割」と同じ計算・累計範囲を参照する。
     const totalIn=cumulativeActiveG*3;
     const totalOut=totalIn+cumulativeDiff;
     const displayedRate=totalIn>0?(totalOut/totalIn)*100:null;
@@ -408,7 +479,6 @@ function getRainbowBonusIds(){
     const start=entries[i];
     if(!start||Number(start.item.initialG)<=32||start.sectionGame<2000||start.displayedRate===null||start.displayedRate<65)continue;
 
-    // 初当たりの次から、各ボーナス間が32G以内で続く範囲を連チャンとして扱う。
     const chain=[start];
     for(let j=i+1;j<entries.length;j++){
       const next=entries[j];
@@ -416,8 +486,6 @@ function getRainbowBonusIds(){
       chain.push(next);
     }
     const chainPayout=chain.reduce((sum,x)=>sum+(Number(x.item.payout)||0),0);
-    // 初当たりを含めて6連以上、かつ獲得枚数合計が1,000枚を超える場合のみ、
-    // 初当たり後の連チャン履歴をレインボー表示する。
     if(chain.length>=6&&chainPayout>1000){
       chain.slice(1).forEach(x=>ids.add(x.item.id));
       i+=chain.length-1;
@@ -454,7 +522,7 @@ function render(){
     }
     tbody.appendChild(tr);
   });
-  const allInitialG=totalInitialG(),allAddG=totalAddG(),allPayout=totalPayout();
+  const allInitialG=totalInitialG(),allAddG=totalAddG();
   const allActiveG=allInitialG+allAddG;
   const allDiff=histories.filter(isBonus).reduce((sum,item)=>sum+itemDiff(item),0);
   const totalIn=allActiveG*3,totalOut=totalIn+allDiff;
@@ -469,6 +537,7 @@ function render(){
   renderSettingAnalysis();
   renderCharts(overallData,sections,overallGames);
 }
+
 function renderSettingAnalysis(){
   const holder=document.getElementById('setting-results');
   if(!holder)return;
@@ -501,20 +570,18 @@ function renderSettingAnalysis(){
   rows.forEach((r,i)=>r.posterior=weights[i]/sumWeights*100);
   rows.sort((a,b)=>b.posterior-a.posterior);
   const best=rows[0];
-  const cherryObserved=cherryGames>0?cherryGames/(cherryCount||Infinity):null;
   const invalidCherry=cherryGames>0&&cherryCount>cherryGames;
   const modeText=hasHitData&&cherryValid?'初当たり＋チェリーB':hasHitData?'初当たり確率のみ':'チェリーBのみ';
   let html=`<div class="setting-result"><div class="small">対象：沖ドキ！${config.name} ／ 判別材料：${modeText}</div><p style="font-size:1.05rem;margin-top:5px"><strong>推定設定：${best.setting}</strong>（相対推定 ${best.posterior.toFixed(1)}%）</p><p class="setting-note">初当たり集計：${hitCount}回（BIG ${bigCount}回・REG ${regCount}回）／初当たりG合計 ${fmt(totalG)}G</p></div>`;
   html+=`<div class="reggrid"><div class="regbox"><strong>初当たりBIG確率（実績）</strong>${bigRate!==null?'1/'+bigRate.toFixed(1):'—'}<p class="setting-note">BIG初当たり ${bigCount}回</p></div><div class="regbox"><strong>初当たりREG確率（実績）</strong>${regRate!==null?'1/'+regRate.toFixed(1):'—'}<p class="setting-note">REG初当たり ${regCount}回</p></div></div>`;
   if(cherryGames>0){
-    if(invalidCherry) html+='<p class="setting-note bad" style="margin-top:8px">入力エラー：チェリーB回数がカウント対象ゲーム数を超えています。チェリーBは推定に使用していません。</p>';
+    if(invalidCherry) html+='<p class="setting-note bad" style="margin-top:8px">入力エラー：チェリーB回数がカウント対象ゲーム数を超えています。</p>';
     else html+=`<p class="setting-note" style="margin-top:8px">チェリーB実績：${cherryCount}/${cherryGames.toLocaleString('ja-JP')}G（1/${(cherryGames/(cherryCount||Infinity)).toFixed(1)}）</p>`;
   }
   html+='<p class="setting-note" style="margin:10px 0 5px">設定ごとの相対推定</p>';
   rows.sort((a,b)=>a.setting-b.setting).forEach(r=>{
     html+=`<div class="setting-row"><strong>設定${r.setting}</strong><div class="bartrack"><div class="barfill" style="width:${r.posterior.toFixed(3)}%"></div></div><span style="text-align:right">${r.posterior.toFixed(1)}%</span></div>`;
   });
-  html+='<p class="setting-note">※表示％は入力した材料と今回の設定候補内で計算した相対値で、実際の設定が当たる確率を保証するものではありません。</p>';
   holder.innerHTML=html;
 }
 
@@ -538,7 +605,7 @@ function getCutMarks(sections){
         }
       });
       if(prevDiff<2098&&diff>=2098){
-        itemMarks.push({kind:'diff',title:`区間推定差枚が＋2,098枚に到達。＋2,098〜＋2,250枚帯の差枚数切断候補（現在 ${fmt(diff)}枚）`});
+        itemMarks.push({kind:'diff',title:`区間推定差枚が＋2,098枚に到達（現在 ${fmt(diff)}枚）`});
       }
       if(itemMarks.length) marks.set(item.id,itemMarks);
     });
@@ -630,7 +697,7 @@ function renderCutAnalysis(sections){
     });
   });
   if(!histories.some(isBonus)){holder.innerHTML='<p class="empty">履歴を入力すると参考判定を表示します。</p>';return;}
-  if(!findings.length){holder.innerHTML='<p class="small">現在の履歴では、設定したゲーム数・差枚数の切断候補を検出していません。候補に達していないことは、切断が起きていない証明にはなりません。</p>';return;}
+  if(!findings.length){holder.innerHTML='<p class="small">現在の履歴では、設定したゲーム数・差枚数の切断候補を検出していません。</p>';return;}
   holder.innerHTML='';
   findings.forEach(f=>{
     const row=document.createElement('div');row.className='regbox';row.style.marginBottom='7px';
@@ -641,11 +708,12 @@ function renderCutAnalysis(sections){
 }
 function escapeHtml(str){return String(str).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 </script>
+
 <div class="card" id="hibiscus-patterns">
   <details class="memo-details">
     <summary aria-controls="hibiscus-patterns-content"><h2>ハイビスカスの光り方一覧表</h2><span class="memo-arrow" aria-hidden="true">▼</span></summary>
     <div class="memo-content" id="hibiscus-patterns-content">
-      <p class="hibi-note">沖ドキ！GOLDの点灯パターンとモード示唆の参考一覧。示唆は次回モードについての情報です。</p>
+      <p class="hibi-note">沖ドキ！GOLDの点灯パターンとモード示唆の参考一覧。</p>
       <div class="hibi-wrap">
         <table class="hibi-table">
           <thead><tr><th>点灯パターン</th><th>示唆</th></tr></thead>
@@ -703,31 +771,18 @@ function escapeHtml(str){return String(str).replace(/[&<>"']/g,c=>({'&':'&amp;',
 
 <div class="card" id="change-log">
   <details class="memo-details">
-    <summary aria-controls="change-log-content"><h2>更新履歴 <span class="version-label">ver.21</span><span class="update-time">2026年11月6日 2時24分</span></h2><span class="memo-arrow" aria-hidden="true">▼</span></summary>
+    <summary aria-controls="change-log-content"><h2>更新履歴 <span class="version-label">ver.21</span></h2><span class="memo-arrow" aria-hidden="true">▼</span></summary>
     <div class="memo-content" id="change-log-content">
   <ul class="small" style="padding-left:20px;line-height:1.7">
     <li>HTMLのタイトルと見出しを「沖ドキ考察｜GPT」に変更。</li>
-    <li>「履歴を書き出し」ボタンと、未使用となる履歴書き出し処理を削除。</li>
-    <li>全体・区間別グラフの横軸を累計G数に変更し、500G刻みの目盛りを追加（表示が混み合う場合はラベルのみ1,000G刻み）。</li>
+    <li>全体・区間別グラフの横軸を累計G数に変更し、500G刻みの目盛りを追加。</li>
     <li>有利区間切断候補の参考判定を追加。GOLDは1,600〜2,000G帯、BLACKは2,000・2,600・3,000・3,600・4,000G付近、GORGEOUSは2,600・3,000・3,600・4,000G付近を候補として表示。</li>
-    <li>有利区間切断候補と差枚数切断候補に該当するボーナス履歴の初当たりG欄に、それぞれ色分けしたマークを追加。</li>
-    <li>推定差枚が＋2,098〜＋2,250枚の範囲を通過した場合、「差枚数切断の可能性が高い」と表示。</li>
-    <li>設定判別機能を追加。チェックを付けた初当たり履歴から初当たりBIG・REG実績確率を表示し、機種別の初当たり確率とチェリーB実測値から設定1・2・3・5・6を推定。</li>
-    <li>初当たりとして集計するかをボーナス追加時および履歴表から切り替え可能にし、連チャン中のボーナスを設定判別から除外できるよう変更。</li>
-    <li>チェリーB回数とカウント対象ゲーム数の手入力欄を追加し、機種別に保存。全リセット時はチェリーBカウントも消去。</li>
-    <li>設定判別の初当たり集計を修正。前回ボーナス後32G以内のボーナスは連チャン扱いとして自動除外し、履歴表でも対象チェックを無効化。</li>
-    <li>初当たりG数入力欄の直下に数字パッドを追加。数字入力・1文字削除・全消去を可能に。</li>
-    <li>数字パッドでの入力・履歴追加後に入力欄へ自動フォーカスしないよう変更。スマホのソフトウェアキーボードが勝手に開く問題を防止。</li>
-    <li>「全体の出玉推移」を「設定判別（初当たり＋チェリーB）」より上に移動。</li>
-    <li>区切り線に長押しドラッグ移動を追加。履歴内の任意位置へ移動でき、区切り線の上下ボタン操作を廃止。</li>
-    <li>既存の出玉・差枚数計算式、履歴保存、全リセット機能は変更せず維持。</li>
-    <li>検索エンジン向けに noindex,nofollow を指定。6号機規制メモと更新履歴を折り畳み式に変更。</li>
-    <li>履歴表の「区間加算後G」が2,000G以上の初当たりから始まる連チャンを判定。初当たりを含めて6連以上・獲得枚数合計1,000枚超の場合、初当たり後の32G以内のボーナス履歴のみをレインボー表示。</li>
-    <li>登録済みのボーナス履歴を機種別に一括変更する機能を追加。初当たりG数・BIG/REG・獲得枚数・履歴順を維持し、機種名と機種別のボーナス加算Gを変更。</li>
-    <li>更新履歴にバージョン表記を追加。以後の更新ごとにverを1ずつ加算。</li>
-    <li>ハイビスカスの光り方一覧表を追加。点灯パターン別の示唆と分かりづらいパターンの特徴を、折り畳み式で確認できるように変更。</li>
-    <li>更新履歴の見出しに、バージョンと最終更新日時（年月日・時分）を並べて表示するよう変更。</li>
-
+    <li>設定判別機能を追加。チェックを付けた初当たり履歴から確率を算出し、設定1・2・3・5・6を推定。</li>
+    <li>数字パッドでの入力・履歴追加後に入力欄へ自動フォーカスしないよう変更。</li>
+    <li>区切り線に長押しドラッグ移動を追加。</li>
+    <li>登録済みのボーナス履歴を機種別に一括変更する機能を追加。</li>
+    <li>ハイビスカスの光り方一覧表を追加。</li>
+    <li><strong>[ver.21]</strong> スクショ・テキスト一括インポート機能のパース処理を強化。データ行に時刻（<code>XX:XX</code>）が含まれていても自動で無視し、右側の種別と直前のゲーム数を確実に逆算して読み取るよう修正。</li>
   </ul>
     </div>
   </details>
