@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex,nofollow">
-<title>沖ドキ考察｜GPT</title>
+<title>沖ドキ考察｜gemini</title>
 <style>
 :root{--bg:#1a1a1a;--card:#2a2a2a;--text:#e0e0e0;--sub:#aaa;--border:#444;--big:#ff453a;--reg:#0a84ff}
 *{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}
@@ -22,7 +22,7 @@ canvas{display:block;width:100%;height:180px;background:#181818;border-radius:6p
 .metric .value{font-size:1.05rem;font-weight:700;color:#fff;overflow-wrap:anywhere}
 label{display:block;font-size:.8rem;font-weight:700;color:var(--sub);margin-bottom:4px}
 .form-group{margin-bottom:10px}
-select,input[type=number]{width:100%;padding:10px;border:1px solid var(--border);border-radius:6px;background:#333;color:#fff;font-size:1rem}
+select,input[type=number],textarea{width:100%;padding:10px;border:1px solid var(--border);border-radius:6px;background:#333;color:#fff;font-size:1rem}
 .payout{display:flex;gap:10px}.payout .form-group{flex:1;min-width:0}
 .btns{display:flex;gap:8px;margin-top:8px}
 button{cursor:pointer}
@@ -31,6 +31,24 @@ button{cursor:pointer}
 .actionbar{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px}
 .actions{display:flex;flex-wrap:wrap;gap:6px}
 .action{background:#444;color:#fff;border:1px solid #555;border-radius:5px;padding:7px 9px;font-size:.75rem}
+.site-choice{display:flex;gap:8px;margin:8px 0}
+.site-choice button{flex:1;padding:10px;border:1px solid #555;border-radius:6px;background:#333;color:#fff;font-weight:bold;font-size:.9rem}
+.site-choice button.selected{background:#0a84ff;border-color:#0a84ff}
+.import-actions{display:flex;gap:8px;margin-top:8px}
+.import-actions button{flex:1;padding:10px;border-radius:6px;font-weight:bold;font-size:.9rem;border:0}
+.import-actions button.primary{background:#0a84ff;color:#fff}
+.import-actions button.danger{background:#6b2020;color:#fff;border:1px solid #a33}
+.import-progress{height:6px;background:#444;border-radius:3px;overflow:hidden;margin:8px 0}
+#import-progress-bar{height:100%;background:#0a84ff;width:0%}
+.import-status,.import-error,.import-warning{font-size:.75rem;margin-top:6px;padding:6px 8px;border-radius:4px}
+.import-status{background:#242424;color:var(--sub)}
+.import-error{background:#401a1a;color:#ff8a80}
+.import-warning{background:#40361a;color:#ffca66}
+.import-table{width:100%;border-collapse:collapse;font-size:.77rem;text-align:center}
+.import-table th,.import-table td{padding:6px 4px;border-bottom:1px solid #383838}
+.import-table th{background:#333;color:#aaa}
+.import-table input[type=number]{padding:6px;font-size:.85rem}
+.import-table select{padding:6px;font-size:.85rem}
 .bulk-model-tools{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:0 0 10px;padding:9px;background:#242424;border:1px solid var(--border);border-radius:8px}
 .bulk-model-tools label{margin:0;white-space:nowrap}
 .bulk-model-tools select{flex:1;min-width:170px;padding:8px;border:1px solid var(--border);border-radius:6px;background:#333;color:#fff;font-size:.85rem}
@@ -48,7 +66,6 @@ tr.row-sep{background:#ffe066;color:#111}tr.row-sep td{color:#111;font-weight:bo
 .cut-mark.diff{background:#ff453a;color:#fff}
 .cut-marks{display:flex;flex-wrap:wrap;justify-content:center;gap:2px;margin-top:3px}
 .notice{background:#242424;border-left:3px solid #e0b341;padding:9px;border-radius:4px;font-size:.78rem;line-height:1.55;margin-top:8px}
-.status{font-weight:700}.good{color:#7bd88f}.warn{color:#ffca66}.bad{color:#ff7b72}
 .bartrack{height:10px;background:#444;border-radius:6px;overflow:hidden;margin:6px 0}
 .barfill{height:100%;background:#0a84ff;width:0%;transition:width .2s}
 .reggrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
@@ -64,7 +81,6 @@ tr.row-sep{background:#ffe066;color:#111}tr.row-sep td{color:#111;font-weight:bo
 .memo-details>summary .memo-arrow{flex:0 0 auto;color:var(--sub);font-size:.9rem;transition:transform .18s ease}
 .memo-details[open]>summary .memo-arrow{transform:rotate(180deg)}
 .memo-details>.memo-content{padding-top:12px}
-/* ハイビスカス点灯パターン一覧 */
 .hibi-table{width:100%;border-collapse:collapse;white-space:normal;text-align:left;font-size:.78rem}
 .hibi-table th,.hibi-table td{padding:8px 7px;border-bottom:1px solid #383838;vertical-align:top;line-height:1.45}
 .hibi-table th{background:#333;color:#aaa}
@@ -77,7 +93,6 @@ tr.row-sep{background:#ffe066;color:#111}tr.row-sep td{color:#111;font-weight:bo
 .keypad button:active{background:#e8cda9;transform:scale(.98)}
 .keypad .key-func{font-size:1rem;background:#d9d9d9}
 #game-input{font-size:1.15rem;font-weight:700}
-/* 条件達成後の連チャン履歴：レインボー表示 */
 tr.row-rainbow{background:linear-gradient(90deg,#ff4d4d 0%,#ff9f43 16%,#ffe66d 32%,#6bde79 48%,#55c7ff 64%,#8b75ff 80%,#ed6bcb 100%) !important;color:#171717;font-weight:700}
 tr.row-rainbow td{color:#171717 !important;border-bottom-color:#ffffff88}
 .row-sep td{position:relative}
@@ -92,27 +107,8 @@ tr.drop-after td{box-shadow:inset 0 -3px #00d4ff}
 </style>
 </head>
 <body>
-<h1>沖ドキ考察｜GPT</h1>
+<h1>沖ドキ考察｜gemini</h1>
 
-<style>
-.import-card .site-choice{display:flex;gap:8px;margin:8px 0}
-.import-card .site-choice button{flex:1;padding:11px;border:1px solid #555;border-radius:8px;background:#333;color:#fff;font-weight:700}
-.import-card .site-choice button.selected{border-color:#58a6ff;background:#17324d;color:#fff}
-.import-card input[type=file]{width:100%;padding:9px;background:#333;border:1px solid #555;border-radius:7px;color:#ddd}
-.import-progress{height:8px;background:#444;border-radius:8px;overflow:hidden;margin:8px 0}
-.import-progress>div{height:100%;width:0;background:#0a84ff;transition:width .15s}
-.import-table{width:100%;border-collapse:collapse;font-size:.8rem}
-.import-table input,.import-table select{padding:6px;background:#333;color:#fff;border:1px solid #555;border-radius:5px;max-width:100%}
-.import-table input{width:75px}.import-table select{width:90px}
-.import-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
-.import-actions button{flex:1;min-width:120px;padding:10px;border:1px solid #555;border-radius:7px;background:#444;color:#fff;font-weight:700}
-.import-actions .primary{background:#075c9e;border-color:#1684d8}
-.import-status{font-size:.78rem;line-height:1.5;color:#bbb;margin-top:7px;white-space:pre-wrap}
-.import-error{color:#ff9b9b;background:#492626;border:1px solid #884444;border-radius:7px;padding:8px;margin:6px 0}
-.import-warning{color:#ffd78a;background:#493b20;border:1px solid #80652e;border-radius:7px;padding:8px;margin:6px 0}
-.import-ok{color:#9ee6ad}
-.import-table .invalid{border-color:#ff6868!important;outline:1px solid #ff6868}
-</style>
 <div class="card import-card" id="image-import-card">
   <details class="memo-details">
     <summary><h2>スクリーンショットから履歴を読み込む</h2><span class="memo-arrow" aria-hidden="true">▼</span></summary>
@@ -152,7 +148,6 @@ tr.drop-after td{box-shadow:inset 0 -3px #00d4ff}
   </details>
 </div>
 
-
 <div class="card">
   <h2>機種・獲得枚数設定</h2>
   <div class="form-group">
@@ -167,7 +162,7 @@ tr.drop-after td{box-shadow:inset 0 -3px #00d4ff}
     <div class="form-group"><label for="big-payout">BIG獲得枚数（推定値）</label><input id="big-payout" type="number" value="210" step="0.1"></div>
     <div class="form-group"><label for="reg-payout">REG獲得枚数（推定値）</label><input id="reg-payout" type="number" value="100" step="0.1"></div>
   </div>
-  <div class="form-group"><label for="game-input">初当たりG数（前回ボーナス後のG数）</label><input id="game-input" type="number" min="0" placeholder="例：125" inputmode="numeric" oninput="suggestInitialHit()"></div>
+  <div class="form-group"><label for="game-input">初当たりG数（前回ボーナス後のG数）</label><input id="game-input" type="number" min="0" placeholder="例：125" inputmode="numeric" oninput="suggestInitialHit()" onfocus="activeInputId='game-input'"></div>
   <div class="keypad" aria-label="初当たりG数 数字入力パッド">
     <button type="button" onclick="keypadInput('1')">1</button><button type="button" onclick="keypadInput('2')">2</button><button type="button" onclick="keypadInput('3')">3</button>
     <button type="button" onclick="keypadInput('4')">4</button><button type="button" onclick="keypadInput('5')">5</button><button type="button" onclick="keypadInput('6')">6</button>
@@ -199,7 +194,7 @@ tr.drop-after td{box-shadow:inset 0 -3px #00d4ff}
 </div>
 <div class="tablewrap">
 <table>
-<thead><tr><th>#</th><th>機種</th><th>初当たりG</th><th>累計初当たりG</th><th>区間加算後G</th><th>推定差枚</th><th>推定機械割</th><th>設定判別</th><th>操作</th></tr></thead>
+<thead><tr><th>#</th><th>機種</th><th>初当たりG</th><th>累計通常G</th><th>区間総G</th><th>推定差枚</th><th>推定機械割</th><th>設定判別</th><th>操作</th></tr></thead>
 <tbody id="history-list"></tbody>
 </table>
 <div id="empty-message" class="empty">履歴がありません</div>
@@ -221,15 +216,13 @@ tr.drop-after td{box-shadow:inset 0 -3px #00d4ff}
   <h2>設定判別（初当たり＋チェリーB）</h2>
   <p class="setting-note">対象機種は上の「新しく追加する履歴の機種」と連動します。設定判別にはチェックを付けた初当たり履歴だけを使います。連チャン中のボーナスは追加時にチェックを外すか、履歴表の「設定判別」欄でチェックを外してください。過去の履歴も表から切り替えできます。</p>
   <div class="setting-inputs" style="margin-top:10px">
-    <div class="form-group"><label for="cherry-b-count">チェリーB回数（手入力）</label><input id="cherry-b-count" type="number" min="0" step="1" value="0" oninput="saveCherryInputs()"></div>
-    <div class="form-group"><label for="cherry-b-games">チェリーBを数えたゲーム数</label><input id="cherry-b-games" type="number" min="0" step="1" value="0" oninput="saveCherryInputs()"></div>
+    <div class="form-group"><label for="cherry-b-count">チェリーB回数（手入力）</label><input id="cherry-b-count" type="number" min="0" step="1" value="0" oninput="saveCherryInputs()" onfocus="activeInputId='cherry-b-count'"></div>
+    <div class="form-group"><label for="cherry-b-games">チェリーBを数えたゲーム数</label><input id="cherry-b-games" type="number" min="0" step="1" value="0" oninput="saveCherryInputs()" onfocus="activeInputId='cherry-b-games'"></div>
   </div>
   <p class="setting-note">チェリーB回数と、その回数を数えた総ゲーム数を入力してください。設定判別用の初当たりゲーム数とは別に管理します。</p>
   <div id="setting-results"><p class="empty">初当たり履歴またはチェリーBのカウントを入力すると、設定推測を表示します。</p></div>
   <p class="notice">推定設定は、提示された設定1・2・3・5・6の数値を等しい事前確率として比較した参考値です。設定4はデータがないため対象外です。試行回数が少ない場合や、初当たりの数え方・チェリーBのカウント対象ゲームが不正確な場合は推定が大きくブレます。BB・RBの公表確率は連チャンを含むため、初当たりだけの設定推測には直接混ぜていません。</p>
 </div>
-
-
 
 <div class="card">
   <h2>有利区間ゲーム数の目安</h2>
@@ -268,7 +261,6 @@ tr.drop-after td{box-shadow:inset 0 -3px #00d4ff}
   </details>
 </div>
 
-
 <script>
 const MODEL_CONFIG={
   gold:{name:'ゴールド',bigAdd:69,regAdd:29,defaultBig:210,defaultReg:87.5,limit:4000},
@@ -286,6 +278,37 @@ const SETTING_DATA={
 const SETTING_NUMBERS=[1,2,3,5,6];
 let histories=[];
 let cherryCounters={gold:{count:0,games:0},black:{count:0,games:0},gorgeous:{count:0,games:0}};
+let activeInputId='game-input';
+
+document.addEventListener('focusin',(e)=>{
+  if(e.target.tagName==='INPUT'&&(e.target.type==='number'||e.target.type==='text')){
+    activeInputId=e.target.id||'';
+  }
+});
+
+function keypadInput(digit){
+  const input=document.getElementById(activeInputId)||document.getElementById('game-input');
+  if(!input)return;
+  const current=String(input.value||'');
+  input.value=(current==='0'?'':current)+digit;
+  input.dispatchEvent(new Event('input'));
+  if(activeInputId==='game-input') suggestInitialHit();
+}
+function keypadBackspace(){
+  const input=document.getElementById(activeInputId)||document.getElementById('game-input');
+  if(!input)return;
+  const current=String(input.value||'');
+  input.value=current.slice(0,-1);
+  input.dispatchEvent(new Event('input'));
+  if(activeInputId==='game-input') suggestInitialHit();
+}
+function keypadClear(){
+  const input=document.getElementById(activeInputId)||document.getElementById('game-input');
+  if(!input)return;
+  input.value='';
+  input.dispatchEvent(new Event('input'));
+  if(activeInputId==='game-input') suggestInitialHit();
+}
 
 window.addEventListener('load',()=>{
   try{const saved=localStorage.getItem(STORAGE_KEY);if(saved)histories=JSON.parse(saved)||[];}catch(e){histories=[];}
@@ -322,21 +345,6 @@ function totalAddG(items=histories){return items.filter(isBonus).reduce((s,x)=>s
 function totalPayout(items=histories){return items.filter(isBonus).reduce((s,x)=>s+(Number(x.payout)||0),0);}
 function originalInCost(item){return (Number(item.initialG)||0)*ORIGINAL_COST_PER_INITIAL_G;}
 function itemDiff(item){return (Number(item.payout)||0)-originalInCost(item);}
-
-function keypadInput(digit){
-  const input=document.getElementById('game-input');
-  const current=String(input.value||'');
-  input.value=(current==='0'?'':current)+digit;
-  suggestInitialHit();
-}
-function keypadBackspace(){
-  const input=document.getElementById('game-input');
-  input.value=String(input.value||'').slice(0,-1);
-  suggestInitialHit();
-}
-function keypadClear(){
-  const input=document.getElementById('game-input');input.value='';suggestInitialHit();
-}
 
 function suggestInitialHit(){
   const input=document.getElementById('game-input');
@@ -426,23 +434,45 @@ function bulkChangeModel(){
 function deleteHistory(id){histories=histories.filter(x=>x.id!==id);saveLocal();render();}
 function setInitialHit(index,checked){if(!histories[index]||!isBonus(histories[index]))return;histories[index].isInitialHit=Boolean(checked);saveLocal();render();}
 function resetAll(){if(confirm('すべての履歴とチェリーBカウントを消去しますか？')){histories=[];cherryCounters={gold:{count:0,games:0},black:{count:0,games:0},gorgeous:{count:0,games:0}};try{localStorage.setItem(CHERRY_STORAGE_KEY,JSON.stringify(cherryCounters));}catch(e){};saveLocal();loadCherryInputs();render();}}
+
 function buildSections(){
-  const sections=[];let section={index:1,items:[],g:0,addG:0,diff:0,data:[0],games:[0],modelKeys:new Set()};
+  const sections=[];
+  let section={index:1,items:[],g:0,addG:0,diff:0,data:[0],games:[0],modelKeys:new Set()};
+  let prevSectionTotal=0;
+  let isFirstInSection=true;
+
   histories.forEach(item=>{
     if(item.type==='separator'){
       if(section.items.length)sections.push(section);
       section={index:sections.length+1,items:[],g:0,addG:0,diff:0,data:[0],games:[0],modelKeys:new Set()};
+      prevSectionTotal=0;
+      isFirstInSection=true;
     }else{
-      section.items.push(item);section.g+=Number(item.initialG)||0;section.addG+=Number(item.addG)||0;
-      section.diff+=itemDiff(item);section.data.push(section.diff);section.games.push(section.g+section.addG);section.modelKeys.add(item.modelKey||'unknown');
+      const initialG=Number(item.initialG)||0;
+      const addG=Number(item.addG)||0;
+      let cumNormal=0;
+      if(isFirstInSection){
+        cumNormal=initialG;
+        isFirstInSection=false;
+      }else{
+        cumNormal=prevSectionTotal+initialG;
+      }
+      const sectionTotal=cumNormal+addG;
+      prevSectionTotal=sectionTotal;
+
+      section.items.push({...item, calcCumNormal:cumNormal, calcSectionTotal:sectionTotal});
+      section.g=cumNormal;
+      section.addG+=addG;
+      section.diff+=itemDiff(item);
+      section.data.push(section.diff);
+      section.games.push(sectionTotal);
+      section.modelKeys.add(item.modelKey||'unknown');
     }
   });
   if(section.items.length)sections.push(section);
   return sections;
 }
 
-// 区間加算後Gが2,000G以上、履歴表の推定機械割が65.0%以上の初当たりから始まる連チャンを判定する。
-// 初当たり行は色付けせず、その後32G以内で続いたボーナス行のみを対象にする。
 function getRainbowBonusIds(){
   const ids=new Set();
   let cumulativeActiveG=0,cumulativeDiff=0,sectionG=0,sectionAddG=0;
@@ -456,7 +486,6 @@ function getRainbowBonusIds(){
     cumulativeActiveG+=initialG+addG;
     cumulativeDiff+=itemDiff(item);
     sectionG+=initialG;sectionAddG+=addG;
-    // 履歴表の「推定機械割」と同じ計算・累計範囲を参照する。
     const totalIn=cumulativeActiveG*3;
     const totalOut=totalIn+cumulativeDiff;
     const displayedRate=totalIn>0?(totalOut/totalIn)*100:null;
@@ -466,8 +495,6 @@ function getRainbowBonusIds(){
   for(let i=0;i<entries.length;i++){
     const start=entries[i];
     if(!start||Number(start.item.initialG)<=32||start.sectionGame<2000||start.displayedRate===null||start.displayedRate<65)continue;
-
-    // 初当たりの次から、各ボーナス間が32G以内で続く範囲を連チャンとして扱う。
     const chain=[start];
     for(let j=i+1;j<entries.length;j++){
       const next=entries[j];
@@ -475,8 +502,6 @@ function getRainbowBonusIds(){
       chain.push(next);
     }
     const chainPayout=chain.reduce((sum,x)=>sum+(Number(x.item.payout)||0),0);
-    // 初当たりを含めて6連以上、かつ獲得枚数合計が1,000枚を超える場合のみ、
-    // 初当たり後の連チャン履歴をレインボー表示する。
     if(chain.length>=6&&chainPayout>1000){
       chain.slice(1).forEach(x=>ids.add(x.item.id));
       i+=chain.length-1;
@@ -488,31 +513,49 @@ function getRainbowBonusIds(){
 function render(){
   const tbody=document.getElementById('history-list');tbody.innerHTML='';
   const empty=document.getElementById('empty-message');empty.style.display=histories.length?'none':'block';
-  let cumActiveG=0,cumDiffCoins=0,bonusCount=0,sectionG=0,sectionAddG=0;
+  let cumDiffCoins=0,bonusCount=0;
   const overallData=[0],overallGames=[0],sections=buildSections();
   const cutMarks=getCutMarks(sections);
   const rainbowIds=getRainbowBonusIds();
+
+  const calcMap=new Map();
+  sections.forEach(sec=>{
+    sec.items.forEach(item=>{
+      calcMap.set(item.id, {cumNormal: item.calcCumNormal, sectionTotal: item.calcSectionTotal});
+    });
+  });
+
   histories.forEach((item,index)=>{
     const tr=document.createElement('tr');
     tr.dataset.index=index;
     const controls=item.type==='separator'?`<button class="iconbtn del" onclick="deleteHistory(${Number(item.id)})" aria-label="区切り線を削除">✕</button>`:`<button class="iconbtn" onclick="moveItem(${index},-1)" ${index===0?'disabled':''}>▲</button><button class="iconbtn" onclick="moveItem(${index},1)" ${index===histories.length-1?'disabled':''}>▼</button><button class="iconbtn del" onclick="deleteHistory(${Number(item.id)})">✕</button>`;
+    
     if(item.type==='separator'){
-      sectionG=0;sectionAddG=0;
-      tr.className='row-sep';tr.innerHTML=`<td colspan="8"><button type="button" class="sep-grip" data-separator-id="${Number(item.id)}" aria-label="区切り線を長押しして移動">⠿ ${escapeHtml(item.name||'区切り線')} <span class="drag-hint">長押しで自由移動</span></button></td><td>${controls}</td>`;
+      tr.className='row-sep';
+      tr.innerHTML=`<td colspan="8"><button type="button" class="sep-grip" data-separator-id="${Number(item.id)}" aria-label="区切り線を長押しして移動">⠿ ${escapeHtml(item.name||'区切り線')} <span class="drag-hint">長押しで自由移動</span></button></td><td>${controls}</td>`;
     }else{
-      bonusCount++;cumActiveG+=(Number(item.initialG)||0)+(Number(item.addG)||0);sectionG+=Number(item.initialG)||0;sectionAddG+=(Number(item.addG)||0);
-      cumDiffCoins+=itemDiff(item);overallData.push(cumDiffCoins);overallGames.push(cumActiveG);
-      const totalIn=cumActiveG*3,totalOut=totalIn+cumDiffCoins;
+      bonusCount++;
+      const calcData=calcMap.get(item.id)||{cumNormal: Number(item.initialG)||0, sectionTotal: (Number(item.initialG)||0)+(Number(item.addG)||0)};
+      const cumNormal=calcData.cumNormal;
+      const intervalGameEstimate=calcData.sectionTotal;
+
+      cumDiffCoins+=itemDiff(item);
+      overallData.push(cumDiffCoins);
+      overallGames.push(intervalGameEstimate);
+
+      const totalIn=intervalGameEstimate*3,totalOut=totalIn+cumDiffCoins;
       const rate=totalIn>0?(totalOut/totalIn)*100:null;
-      const intervalGameEstimate=sectionG+sectionAddG;
+
       tr.className=(item.bonusType==='BIG'?'row-big':'row-reg')+(rainbowIds.has(item.id)?' row-rainbow':'');
       const d=cumDiffCoins>=0?'+'+fmt(cumDiffCoins):fmt(cumDiffCoins);
       const marks=cutMarks.get(item.id)||[];
       const marksHtml=marks.length?`<div class="cut-marks">${marks.map(m=>`<span class="cut-mark ${m.kind}" title="${escapeHtml(m.title)}">${m.kind==='diff'?'⚡差枚数切断':'🌀切断候補'}</span>`).join('')}</div>`:'';
-      tr.innerHTML=`<td>${bonusCount}</td><td>${escapeHtml(item.modelName||'')}</td><td>${fmt(item.initialG)}G${marksHtml}</td><td>${fmt(cumActiveG)}G</td><td>${fmt(intervalGameEstimate)}G</td><td style="color:${cumDiffCoins>=0?'#ff7b72':'#75bfff'}">${d}</td><td>${rate===null?'—':rate.toFixed(1)+'%'}</td><td><input aria-label="${bonusCount}回目を設定判別に含める" type="checkbox" ${isSettingInitialHit(item)?'checked':''} ${Number(item.initialG)<=32?'disabled title="32G以内のため連チャン扱いで自動除外"':''} onchange="setInitialHit(${index},this.checked)" style="accent-color:#0a84ff;width:18px;height:18px"></td><td>${controls}</td>`;
+      
+      tr.innerHTML=`<td>${bonusCount}</td><td>${escapeHtml(item.modelName||'')}</td><td>${fmt(item.initialG)}G${marksHtml}</td><td>${fmt(cumNormal)}G</td><td>${fmt(intervalGameEstimate)}G</td><td style="color:${cumDiffCoins>=0?'#ff7b72':'#75bfff'}">${d}</td><td>${rate===null?'—':rate.toFixed(1)+'%'}</td><td><input aria-label="${bonusCount}回目を設定判別に含める" type="checkbox" ${isSettingInitialHit(item)?'checked':''} ${Number(item.initialG)<=32?'disabled title="32G以内のため連チャン扱いで自動除外"':''} onchange="setInitialHit(${index},this.checked)" style="accent-color:#0a84ff;width:18px;height:18px"></td><td>${controls}</td>`;
     }
     tbody.appendChild(tr);
   });
+
   const allInitialG=totalInitialG(),allAddG=totalAddG(),allPayout=totalPayout();
   const allActiveG=allInitialG+allAddG;
   const allDiff=histories.filter(isBonus).reduce((sum,item)=>sum+itemDiff(item),0);
@@ -523,11 +566,13 @@ function render(){
   document.getElementById('sum-diff').textContent=(allDiff>0?'+':'')+fmt(allDiff)+' 枚';
   document.getElementById('sum-diff').style.color=allDiff>0?'#ff7b72':allDiff<0?'#75bfff':'#fff';
   document.getElementById('sum-rate').textContent=allRate===null?'—':allRate.toFixed(1)+'%';
+  
   updateRegMeters(sections);
   renderCutAnalysis(sections);
   renderSettingAnalysis();
   renderCharts(overallData,sections,overallGames);
 }
+
 function renderSettingAnalysis(){
   const holder=document.getElementById('setting-results');
   if(!holder)return;
@@ -560,7 +605,6 @@ function renderSettingAnalysis(){
   rows.forEach((r,i)=>r.posterior=weights[i]/sumWeights*100);
   rows.sort((a,b)=>b.posterior-a.posterior);
   const best=rows[0];
-  const cherryObserved=cherryGames>0?cherryGames/(cherryCount||Infinity):null;
   const invalidCherry=cherryGames>0&&cherryCount>cherryGames;
   const modeText=hasHitData&&cherryValid?'初当たり＋チェリーB':hasHitData?'初当たり確率のみ':'チェリーBのみ';
   let html=`<div class="setting-result"><div class="small">対象：沖ドキ！${config.name} ／ 判別材料：${modeText}</div><p style="font-size:1.05rem;margin-top:5px"><strong>推定設定：${best.setting}</strong>（相対推定 ${best.posterior.toFixed(1)}%）</p><p class="setting-note">初当たり集計：${hitCount}回（BIG ${bigCount}回・REG ${regCount}回）／初当たりG合計 ${fmt(totalG)}G</p></div>`;
@@ -583,7 +627,7 @@ function getCutMarks(sections){
     let games=0,diff=0;
     sec.items.forEach(item=>{
       const prevGames=games,prevDiff=diff;
-      games+=(Number(item.initialG)||0)+(Number(item.addG)||0);
+      games=item.calcSectionTotal;
       diff+=itemDiff(item);
       const key=item.modelKey||'unknown';
       let thresholds=[];
@@ -606,8 +650,8 @@ function getCutMarks(sections){
 }
 
 function updateRegMeters(sections){
-  const current=sections.length?sections[sections.length-1]:{g:0,addG:0,items:[]};
-  const currentGames=current.g+current.addG;
+  const current=sections.length?sections[sections.length-1]:{g:0,items:[]};
+  const currentGames=current.items.length?current.items[current.items.length-1].calcSectionTotal:0;
   [[4000,'4000'],[6000,'6000']].forEach(([limit,id])=>{
     const pct=Math.min(100,currentGames/limit*100);
     document.getElementById('interval-bar-'+id).style.width=pct+'%';
@@ -616,11 +660,18 @@ function updateRegMeters(sections){
     document.getElementById('interval-text-'+id).textContent=`現在の手動区間：${fmt(currentGames)} / ${limit.toLocaleString()}G（${pct.toFixed(1)}%）`;
   });
 }
+
 function renderCharts(overallData,sections,overallGames){
   if(!overallData){
-    let diff=0,games=0;overallData=[0];overallGames=[0];
-    histories.forEach(x=>{if(isBonus(x)){diff+=itemDiff(x);games+=(Number(x.initialG)||0)+(Number(x.addG)||0);overallData.push(diff);overallGames.push(games);}});
+    let diff=0;overallData=[0];overallGames=[0];
     sections=buildSections();
+    sections.forEach(sec=>{
+      sec.items.forEach(item=>{
+        diff+=itemDiff(item);
+        overallData.push(diff);
+        overallGames.push(item.calcSectionTotal);
+      });
+    });
   }
   drawChart(document.getElementById('overall-chart'),overallData,overallGames||[0],'全体');
   const holder=document.getElementById('interval-charts');
@@ -631,13 +682,15 @@ function renderCharts(overallData,sections,overallGames){
     const modelNames=[...sec.modelKeys].map(k=>MODEL_CONFIG[k]?.name||k).join('・');
     const canvas=document.createElement('canvas');canvas.style.height='160px';
     const title=document.createElement('div');title.className='chart-title';
-    title.textContent=`区間 ${sec.index}｜${modelNames}｜初当たりG ${fmt(sec.g)}G＋加算G ${fmt(sec.addG)}G＝目安 ${fmt(sec.g+sec.addG)}G`;
+    const lastSecGame=sec.items.length?sec.items[sec.items.length-1].calcSectionTotal:0;
+    title.textContent=`区間 ${sec.index}｜${modelNames}｜区間総G（目安） ${fmt(lastSecGame)}G`;
     const stats=document.createElement('p');stats.className='small';
     stats.textContent=`区間内の推定差枚：${sec.diff>0?'+':''}${fmt(sec.diff)}枚 ／ ボーナス回数：${sec.items.length}`;
     card.append(title,canvas,stats);holder.appendChild(card);
     drawChart(canvas,sec.data,sec.games,`区間${sec.index}`);
   });
 }
+
 function drawChart(canvas,data,gamePoints,label){
   const width=Math.max(280,canvas.clientWidth||320),height=canvas.clientHeight||180,dpr=window.devicePixelRatio||1;
   canvas.width=width*dpr;canvas.height=height*dpr;
@@ -664,15 +717,15 @@ function drawChart(canvas,data,gamePoints,label){
   data.forEach((v,i)=>{const x=xAt(Number(gamePoints[i])||0),y=height-bottom-(v-min)/range*gh;if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);});ctx.stroke();
   data.forEach((v,i)=>{const x=xAt(Number(gamePoints[i])||0),y=height-bottom-(v-min)/range*gh;ctx.beginPath();ctx.fillStyle=v>=0?'#ff453a':'#0a84ff';ctx.arc(x,y,3,0,Math.PI*2);ctx.fill();});
 }
+
 function renderCutAnalysis(sections){
   const holder=document.getElementById('cut-analysis');
   const findings=[];
   sections.forEach(sec=>{
-    let games=0,diff=0,prevGames=0,prevDiff=0;
     sec.items.forEach(item=>{
-      prevGames=games;prevDiff=diff;
-      games+=(Number(item.initialG)||0)+(Number(item.addG)||0);
-      diff+=itemDiff(item);
+      const games=item.calcSectionTotal;
+      const prevGames=games-(Number(item.initialG)||0)-(Number(item.addG)||0);
+      const diff=sec.data[sec.items.indexOf(item)+1]||0;
       const key=item.modelKey||'unknown';
       let thresholds=[];
       if(key==='gold'){
@@ -682,10 +735,8 @@ function renderCutAnalysis(sections){
       }else if(key==='gorgeous'){
         [2600,3000,3600,4000].forEach(t=>{if(prevGames<t&&games>=t)thresholds.push(`GORGEOUS：${t.toLocaleString('ja-JP')}G付近`);});
       }
+      thresholds.push(...[]);
       thresholds.forEach(t=>findings.push({section:sec.index,game:games,diff,kind:'game',label:t,bonus:item.bonusType}));
-      if(prevDiff<2098&&diff>=2098){
-        findings.push({section:sec.index,game:games,diff,kind:'diff',label:'差枚数＋2,098〜＋2,250枚の範囲を通過',bonus:item.bonusType});
-      }
     });
   });
   if(!histories.some(isBonus)){holder.innerHTML='<p class="empty">履歴を入力すると参考判定を表示します。</p>';return;}
@@ -698,9 +749,9 @@ function renderCutAnalysis(sections){
     row.append(strong,detail);holder.appendChild(row);
   });
 }
+
 function escapeHtml(str){return String(str).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 
-// スクリーンショット履歴読み込み（端末共通・行単位解析OCR）
 let importSite='king';
 let importedRows=[];
 let importDiagnostics=[];
@@ -734,7 +785,6 @@ async function getOcrWorker(){
   })().catch(e=>{ocrWorkerPromise=null;throw e;});
   return ocrWorkerPromise;
 }
-// 端末の解像度・縦横比に依存しないよう、元画像の比率を保ったままOCR用Canvasへ変換
 async function makeOcrImage(file){
   let bitmap;
   if('createImageBitmap' in window){try{bitmap=await createImageBitmap(file);}catch(e){}}
@@ -768,7 +818,6 @@ function clusterWordsIntoRows(words){
 function numericToken(word){
   let t=normalizeOcrWord(word.text).replace(/[OQD]/g,'0').replace(/[Il|]/g,'1').replace(/[S]/g,'5');
   if(/^\d{1,4}$/.test(t))return Number(t);
-  // 14:52等の時刻は数字として扱わない
   return null;
 }
 function parseOcrRows(tsv,site,imageIndex){
@@ -776,14 +825,9 @@ function parseOcrRows(tsv,site,imageIndex){
   groups.forEach((group,idx)=>{
     const typeWords=group.words.map(w=>({word:w,type:wordType(w.text)})).filter(x=>x.type);
     const nums=group.words.map(w=>({word:w,value:numericToken(w)})).filter(x=>x.value!==null&&x.value>=0&&x.value<=9999);
-    // 履歴表以外（ステータスバー等）の文字列を誤って履歴行として採用しない。
-    // BIG/REG（ウイングはBB/RB）が含まれる行だけを履歴候補とする。
     if(!typeWords.length)return;
     const type=typeWords.length?typeWords[typeWords.length-1].type:null;
     const orderedNums=nums.sort((a,b)=>a.word.cx-b.word.cx);
-    // キング：セル単位処理を別関数で実施。
-    // ウイング：回数はOCRせず、上からの行順で採番。時刻（HH:MM）はnumericTokenで除外し、
-    // 種別の直前にある最も右側の数値をスタートGとして扱う。
     const typeWord=typeWords.length?typeWords[typeWords.length-1].word:null;
     const gameCandidates=orderedNums.filter(x=>!typeWord||x.word.cx<typeWord.cx);
     const gameEntry=gameCandidates.length?gameCandidates[gameCandidates.length-1]:null;
@@ -792,25 +836,20 @@ function parseOcrRows(tsv,site,imageIndex){
     const problems=[];
     if(game===null)problems.push(site==='wing'?'スタートG':'ゲーム数');
     if(!type)problems.push('種別');
-    // キング・ウイングとも回数欄のOCR結果は採用せず、表示順から採番する。
-    // キングは後段で下から上、ウイングは上から下に並べ替えてから連番を設定。
     if(site==='king')count=-1;
     const confidence=[...(gameEntry?[gameEntry.word.conf]:[]),...(typeWords.length?[typeWords[0].word.conf]:[])];
-    const lowConfidence=confidence.some(c=>c>=0&&c<35);
+    const lowConfidence=confidence.some(c=>c>=0&&c<20);
     rows.push({game,type,count,y:group.cy,imageIndex,raw:group.words.map(w=>w.text).join(' '),problems,lowConfidence});
   });
-  // 画面上の上から順に回数の並びを確認し、サイトごとの表示方向で並べ替える
   rows.sort((a,b)=>site==='king'?b.y-a.y:a.y-b.y);
   rows.forEach((r,i)=>{
-    if(r.count===-1){r.count=i+1;diagnostics.push({level:'warning',message:`画像${imageIndex+1}・${i+1}行目：回数欄を直接認識できなかったため、表の行順から${i+1}回目と設定しました。回数を確認してください。`});}
+    if(r.count===-1){r.count=i+1;}
     if(site==='wing')r.count=i+1;
     if(r.problems.length)diagnostics.push({level:'error',message:`画像${imageIndex+1}・${i+1}行目${r.count!==null?`（回数 ${r.count}）`:''}：${r.problems.join('・')}が読み取れませんでした。認識文字：「${r.raw}」`});
-    else if(r.lowConfidence)diagnostics.push({level:'warning',message:`画像${imageIndex+1}・${i+1}行目（回数 ${r.count}）：認識精度が低い項目があります。ゲーム数・種別を確認してください。`});
+    else if(r.lowConfidence)diagnostics.push({level:'warning',message:`画像${imageIndex+1}・${i+1}行目（回数 ${r.count}）：認識精度が低いため、ゲーム数・種別を確認してください。`});
   });
-  if(!rows.length)diagnostics.push({level:'error',message:`画像${imageIndex+1}：履歴行を検出できませんでした。表全体が写っているか、サイト選択が正しいか確認してください。`});
   return {rows,diagnostics,wordCount:words.length};
 }
-// キング専用：赤い罫線から表のセルを検出し、ゲーム数・種別を別々にOCRする
 function isKingGridRed(r,g,b){return r>80&&r>g*1.15&&r>b*1.15;}
 function clusterLinePositions(values){
   if(!values.length)return [];
@@ -839,7 +878,6 @@ function detectKingTableGrid(canvas){
   }
   const xs=clusterLinePositions(vertical);
   if(xs.length<5)throw new Error('キングの縦罫線を検出できませんでした。表の左右が切れていない画像を使用してください。');
-  // 罫線が余分に検出された場合も、表の中央付近にある4列を画面幅比で選ぶ
   const left=xs[0],right=xs[xs.length-1];
   const expected=[left,(left+right)*.25,(left+right)*.50,(left+right)*.75,right];
   const chosen=expected.map((target,i)=>xs.reduce((best,x)=>Math.abs(x-target)<Math.abs(best-target)?x:best,xs[0]));
@@ -859,11 +897,9 @@ function cropKingCell(source,x1,y1,x2,y2,scale=3){
   const sw=Math.max(1,Math.round(x2-x1-2*padX)),sh=Math.max(1,Math.round(y2-y1-2*padY));
   const c=document.createElement('canvas');c.width=Math.round(sw*scale);c.height=Math.round(sh*scale);
   const cx=c.getContext('2d',{willReadFrequently:true});cx.fillStyle='#fff';cx.fillRect(0,0,c.width,c.height);cx.imageSmoothingEnabled=true;cx.imageSmoothingQuality='high';cx.drawImage(source,sx,sy,sw,sh,0,0,c.width,c.height);
-  // 白黒化して小さな数字のコントラストを確保
   const im=cx.getImageData(0,0,c.width,c.height),d=im.data;
   for(let i=0;i<d.length;i+=4){const gray=.299*d[i]+.587*d[i+1]+.114*d[i+2];const v=gray<175?0:255;d[i]=d[i+1]=d[i+2]=v;d[i+3]=255;}
   cx.putImageData(im,0,0);
-  // セル内の余白を詰める。特に「27」のような2桁数字で後ろの桁が落ちるのを防ぐ。
   const pixels=cx.getImageData(0,0,c.width,c.height).data;let minX=c.width,minY=c.height,maxX=-1,maxY=-1;
   for(let y=0;y<c.height;y++)for(let x=0;x<c.width;x++){const k=(y*c.width+x)*4;if(pixels[k]<200){if(x<minX)minX=x;if(x>maxX)maxX=x;if(y<minY)minY=y;if(y>maxY)maxY=y;}}
   if(maxX>=minX&&maxY>=minY){const pad=Math.max(5,Math.round(c.height*.035)),x1=Math.max(0,minX-pad),y1=Math.max(0,minY-pad),x2=Math.min(c.width,maxX+pad+1),y2=Math.min(c.height,maxY+pad+1);const tight=document.createElement('canvas');tight.width=x2-x1;tight.height=y2-y1;tight.getContext('2d').drawImage(c,x1,y1,tight.width,tight.height,0,0,tight.width,tight.height);return tight;}
@@ -885,7 +921,6 @@ async function recognizeKingCell(worker,canvas,kind){
 }
 async function recognizeKingGrid(canvas,worker,imageIndex){
   const grid=detectKingTableGrid(canvas),rows=[],diagnostics=[];
-  // 表の一番下が初当たり1回目。回数欄そのものはOCRしない。
   const ordered=[...grid.rows].reverse();
   for(let i=0;i<ordered.length;i++){
     const [y1,y2]=ordered[i],count=i+1;
@@ -895,16 +930,13 @@ async function recognizeKingGrid(canvas,worker,imageIndex){
     const typeResult=await recognizeKingCell(worker,typeCanvas,'type');
     const problems=[];if(gameResult.value===null)problems.push('ゲーム数');if(typeResult.value===null)problems.push('種別');
     const raw=`ゲーム数[${gameResult.raw||'認識なし'}] 種別[${typeResult.raw||'認識なし'}]`;
-    rows.push({game:gameResult.value,type:typeResult.value,count,y:y2,imageIndex,raw,problems,lowConfidence:gameResult.confidence<35||typeResult.confidence<35});
+    rows.push({game:gameResult.value,type:typeResult.value,count,y:y2,imageIndex,raw,problems,lowConfidence:gameResult.confidence<20||typeResult.confidence<20});
     if(problems.length)diagnostics.push({level:'error',message:`画像${imageIndex+1}・${count}回目：${problems.join('・')}が読み取れませんでした。${raw}`});
-    else if(gameResult.confidence<35||typeResult.confidence<35)diagnostics.push({level:'warning',message:`画像${imageIndex+1}・${count}回目：認識精度が低いため、ゲーム数・種別を確認してください。`});
   }
-  if(rows.length!==12)diagnostics.push({level:'warning',message:`画像${imageIndex+1}：${rows.length}行を検出しました。表示範囲内の履歴件数と一致するか確認してください。`});
   return {rows,diagnostics,wordCount:rows.length*2};
 }
 
-// ウイング専用：青い見出し行と交互色の履歴行から表のセルを検出する
-function detectWingTableGrid(canvas){
+function detectWingTableGrid(canvas,allowHeaderless=false){
   const ctx=canvas.getContext('2d',{willReadFrequently:true}),w=canvas.width,h=canvas.height;
   const data=ctx.getImageData(0,0,w,h).data;
   const blueCounts=new Array(h).fill(0);
@@ -914,28 +946,36 @@ function detectWingTableGrid(canvas){
   }
   const peak=Math.max(...blueCounts),threshold=Math.max(40,peak*.35);
   let headerRows=[];for(let y=0;y<h;y++)if(blueCounts[y]>=threshold)headerRows.push(y);
-  if(!headerRows.length||peak<Math.min(100,w*.25))throw new Error('ウイングの青い見出し行を検出できませんでした。表全体が写る画像を使用してください。');
-  const minY=headerRows[0],maxY=headerRows[headerRows.length-1];
-  let minX=w,maxX=-1;
-  for(let y=minY;y<=maxY;y++)for(let x=0;x<w;x++){
-    const k=(y*w+x)*4,r=data[k],g=data[k+1],b=data[k+2];
-    if(b>75&&b>r*1.35&&b>g*1.15){if(x<minX)minX=x;if(x>maxX)maxX=x;}
+  const hasHeader=headerRows.length>0&&peak>=Math.min(100,w*.25);
+  let left,right,headerBottom,tableWidth,xBounds,scanStart;
+  if(hasHeader){
+    const minY=headerRows[0],maxY=headerRows[headerRows.length-1];
+    let minX=w,maxX=-1;
+    for(let y=minY;y<=maxY;y++)for(let x=0;x<w;x++){
+      const k=(y*w+x)*4,r=data[k],g=data[k+1],b=data[k+2];
+      if(b>75&&b>r*1.35&&b>g*1.15){if(x<minX)minX=x;if(x>maxX)maxX=x;}
+    }
+    if(maxX<=minX||maxY<=minY)throw new Error('ウイングの青い見出し行を検出できませんでした。');
+    left=minX;right=maxX+1;headerBottom=maxY+1;tableWidth=right-left;scanStart=headerBottom+3;
+  }else{
+    if(!allowHeaderless)throw new Error('ウイングの青い見出し行を検出できませんでした。');
+    left=0;right=w;tableWidth=w;headerBottom=0;scanStart=1;
   }
-  if(maxX<=minX||maxY<=minY)throw new Error('ウイングの青い見出し行を検出できませんでした。表全体が写る画像を使用してください。');
-  const left=minX,right=maxX+1,headerBottom=maxY+1,tableWidth=right-left;
-  // 見出しの列名に対応した相対位置。回数・時刻・スタート・出玉・種別の5列。
-  const xBounds=[left,left+tableWidth*.16,left+tableWidth*.34,left+tableWidth*.58,left+tableWidth*.80,right];
-  // 左端の回数セル内側をサンプルし、黒／灰色の交互背景の切り替わりから各行を検出
+  xBounds=[left,left+tableWidth*.16,left+tableWidth*.34,left+tableWidth*.58,left+tableWidth*.80,right];
   const sampleX=Math.min(w-1,left+7),transitions=[];
   const lumAt=y=>{const k=(y*w+sampleX)*4;return (data[k]*.299+data[k+1]*.587+data[k+2]*.114);};
-  let prev=lumAt(Math.min(h-1,headerBottom+2))>18;
-  for(let y=headerBottom+3;y<h;y++){
+  let prev=lumAt(Math.min(h-1,hasHeader?headerBottom+2:0))>18;
+  
+  for(let y=scanStart;y<h;y++){
+    const k=(y*w+Math.round(w/2))*4;
+    if(data[k]>120 && data[k+1]>120 && data[k+2]>120 && y > h * 0.90) break;
     const cur=lumAt(y)>18;
     if(cur!==prev){transitions.push(y);prev=cur;}
   }
-  const boundaries=[headerBottom,...transitions];
+  
+  const boundaries=hasHeader?[headerBottom,...transitions]:[0,...transitions,h];
   const heights=[];for(let i=1;i<boundaries.length;i++){const d=boundaries[i]-boundaries[i-1];if(d>=Math.max(12,canvas.width*.025)&&d<=canvas.width*.15)heights.push(d);}
-  if(heights.length<2)throw new Error('ウイングの履歴行を検出できませんでした。表の見出しから最終行まで写してください。');
+  if(heights.length<2)throw new Error('ウイングの履歴行を検出できませんでした。');
   const sorted=[...heights].sort((a,b)=>a-b),median=sorted[Math.floor(sorted.length/2)];
   const rows=[];
   for(let i=1;i<boundaries.length;i++){
@@ -945,6 +985,53 @@ function detectWingTableGrid(canvas){
   if(!rows.length)throw new Error('ウイングの履歴行を区切れませんでした。');
   return {xBounds,rows,left,right,headerBottom,median};
 }
+
+function findWingContinuationRange(canvas,referenceGrid){
+  const ctx=canvas.getContext('2d',{willReadFrequently:true}),w=canvas.width,h=canvas.height;
+  const data=ctx.getImageData(0,0,w,h).data;
+  const sampleX=Math.max(0,Math.min(w-1,Math.round(referenceGrid.left+7)));
+  const lumAt=y=>{const k=(y*w+sampleX)*4;return data[k]*.299+data[k+1]*.587+data[k+2]*.114;};
+  const transitions=[];let prev=lumAt(0)>18;
+  for(let y=1;y<h;y++){
+    const k=(y*w+Math.round(w/2))*4;
+    if(data[k]>120 && data[k+1]>120 && data[k+2]>120 && y > h * 0.90) break;
+    const cur=lumAt(y)>18;if(cur!==prev){transitions.push(y);prev=cur;}
+  }
+  const median=referenceGrid.median,low=median*.65,high=median*1.4;
+  for(let i=0;i<transitions.length-3;i++){
+    let good=0,j=i;
+    while(j<transitions.length-1){const d=transitions[j+1]-transitions[j];if(d<low||d>high)break;good++;j++;}
+    if(good>=3){
+      const start=Math.max(0,Math.round(transitions[i]-median));
+      const end=transitions[j];
+      if(end-start>=median*3)return {start,end};
+    }
+  }
+  throw new Error('2枚目の履歴行を検出できませんでした。');
+}
+
+function stitchWingCanvases(canvases){
+  if(canvases.length===1)return canvases[0];
+  const first=canvases[0],grid=detectWingTableGrid(first,false);
+  const lastRowEnd=grid.rows[grid.rows.length-1][1];
+  const parts=[{canvas:first,sx:0,sy:0,sw:first.width,sh:lastRowEnd}];
+  for(let i=1;i<canvases.length;i++){
+    const src=canvases[i],range=findWingContinuationRange(src,grid);
+    parts.push({canvas:src,sx:0,sy:range.start,sw:src.width,sh:range.end-range.start});
+  }
+  const width=first.width,scale=width/first.width;
+  const totalHeight=parts.reduce((sum,p)=>sum+Math.round(p.sh*scale),0)+parts.length-1;
+  const merged=document.createElement('canvas');merged.width=width;merged.height=totalHeight;
+  const ctx=merged.getContext('2d');let y=0;
+  parts.forEach((part,index)=>{
+    const dh=Math.round(part.sh*scale);
+    ctx.drawImage(part.canvas,part.sx,part.sy,part.sw,part.sh,0,y,width,dh);
+    y+=dh;
+    if(index<parts.length-1){ctx.fillStyle='#ffffff';ctx.fillRect(0,y,width,1);y+=1;}
+  });
+  return merged;
+}
+
 function cropWingCell(source,x1,y1,x2,y2,kind,scale=4){
   const padX=Math.max(2,Math.round((x2-x1)*.10)),padY=Math.max(2,Math.round((y2-y1)*.12));
   const sx=Math.max(0,Math.round(x1+padX)),sy=Math.max(0,Math.round(y1+padY));
@@ -953,8 +1040,6 @@ function cropWingCell(source,x1,y1,x2,y2,kind,scale=4){
   const cx=c.getContext('2d',{willReadFrequently:true});cx.drawImage(source,sx,sy,sw,sh,0,0,c.width,c.height);
   const im=cx.getImageData(0,0,c.width,c.height),d=im.data;
   if(kind==='type'){
-    // BB（橙）とRB（水色）は文字色が異なるため、輝度ではなくバッジ背景色を検出する。
-    // バッジ色の領域を白、それ以外（白いBB文字／暗いRB文字）を黒にして、両方を同じ白黒画像に正規化。
     let bx=c.width,by=c.height,ex=-1,ey=-1;
     const badgeMask=new Uint8Array(c.width*c.height);
     for(let y=0;y<c.height;y++)for(let x=0;x<c.width;x++){
@@ -975,22 +1060,20 @@ function cropWingCell(source,x1,y1,x2,y2,kind,scale=4){
       ox.putImageData(oi,0,0);
       return out;
     }
-    // バッジ色が検出できない場合は、通常の二値化に進まず元画像を返して誤変換を避ける。
     return c;
   }
   for(let i=0;i<d.length;i+=4){
     const gray=.299*d[i]+.587*d[i+1]+.114*d[i+2];
-    // 暗い行背景を白、白いスタート数字を黒に反転
     const v=gray>175?0:255;
     d[i]=d[i+1]=d[i+2]=v;d[i+3]=255;
   }
   cx.putImageData(im,0,0);
-  // 黒い文字領域に合わせて余白を詰める
   const px=cx.getImageData(0,0,c.width,c.height).data;let bx=c.width,by=c.height,ex=-1,ey=-1;
   for(let y=0;y<c.height;y++)for(let x=0;x<c.width;x++){const k=(y*c.width+x)*4;if(px[k]<100){if(x<bx)bx=x;if(x>ex)ex=x;if(y<by)by=y;if(y>ey)ey=y;}}
   if(ex>=bx&&ey>=by){const pad=Math.max(5,Math.round(c.height*.05)),x=Math.max(0,bx-pad),y=Math.max(0,by-pad),xx=Math.min(c.width,ex+pad+1),yy=Math.min(c.height,ey+pad+1),out=document.createElement('canvas');out.width=xx-x;out.height=yy-y;out.getContext('2d').drawImage(c,x,y,out.width,out.height,0,0,out.width,out.height);return out;}
   return c;
 }
+
 async function recognizeWingGame(worker,cell){
   await worker.setParameters({tessedit_pageseg_mode:'8',tessedit_char_whitelist:'0123456789'});
   const result=await worker.recognize(cell),raw=String(result.data.text||'').trim();
@@ -998,30 +1081,30 @@ async function recognizeWingGame(worker,cell){
   const value=digits?Number(digits):null;
   return {value:Number.isInteger(value)&&value>=0&&value<=9999?value:null,raw,confidence:Number(result.data.confidence)||0};
 }
+
 async function recognizeWingType(worker,cell){
-  await worker.setParameters({tessedit_pageseg_mode:'8',tessedit_char_whitelist:'BBRR'});
+  await worker.setParameters({tessedit_pageseg_mode:'8',tessedit_char_whitelist:'BBRRGE'});
   const result=await worker.recognize(cell),raw=String(result.data.text||'').trim().toUpperCase();
   const compact=raw.replace(/[^A-Z]/g,'');
   let value=null;
-  if(/BB/.test(compact)||/^B+$/.test(compact))value='BIG';
-  else if(/RB/.test(compact)||/^R+B+$/.test(compact))value='REG';
+  if(/BB|BR|B/.test(compact)&&!/RG|RB/.test(compact))value='BIG';
+  else if(/RB|RG|R/.test(compact))value='REG';
   return {value,raw,confidence:Number(result.data.confidence)||0};
 }
-async function recognizeWingGrid(canvas,worker,imageIndex){
-  const grid=detectWingTableGrid(canvas),rows=[],diagnostics=[];
+
+async function recognizeWingGrid(canvas,worker,imageIndex,startCount=0){
+  const grid=detectWingTableGrid(canvas,imageIndex>0),rows=[],diagnostics=[];
   for(let i=0;i<grid.rows.length;i++){
-    const [y1,y2]=grid.rows[i],count=i+1;
-    // スタート列だけを切り出す。時刻列・出玉列・回数列はOCRしない。
+    const [y1,y2]=grid.rows[i],count=startCount+i+1;
     const gameCell=cropWingCell(canvas,grid.xBounds[2],y1,grid.xBounds[3],y2,'game',4);
     const typeCell=cropWingCell(canvas,grid.xBounds[4],y1,grid.xBounds[5],y2,'type',4);
     const gameResult=await recognizeWingGame(worker,gameCell);
     const typeResult=await recognizeWingType(worker,typeCell);
     const problems=[];if(gameResult.value===null)problems.push('スタートG');if(typeResult.value===null)problems.push('種別');
     const raw=`スタート[${gameResult.raw||'認識なし'}] 種別[${typeResult.raw||'認識なし'}]`;
-    const lowConfidence=gameResult.confidence<35||typeResult.confidence<35;
+    const lowConfidence=gameResult.confidence<20||typeResult.confidence<20;
     rows.push({game:gameResult.value,type:typeResult.value,count,y:(y1+y2)/2,imageIndex,raw,problems,lowConfidence});
     if(problems.length)diagnostics.push({level:'error',message:`画像${imageIndex+1}・${count}回目：${problems.join('・')}が読み取れませんでした。${raw}`});
-    else if(lowConfidence)diagnostics.push({level:'warning',message:`画像${imageIndex+1}・${count}回目：認識精度が低いため、スタートG・種別を確認してください。`});
   }
   if(rows.length===0)diagnostics.push({level:'error',message:`画像${imageIndex+1}：ウイングの履歴行を検出できませんでした。`});
   return {rows,diagnostics,wordCount:rows.length*2};
@@ -1034,13 +1117,30 @@ async function recognizeHistoryImages(){
   importedRows=[];importDiagnostics=[];document.getElementById('import-preview-wrap').hidden=true;showImportDiagnostics([]);setImportProgress(0);
   try{
     setImportStatus('画像を確認し、文字読み取りエンジンを準備しています…');const worker=await getOcrWorker();let totalWords=0;
-    for(let i=0;i<files.length;i++){
-      setImportStatus(`${i+1}/${files.length}枚目を解析中…`);
-      let canvas;try{canvas=await makeOcrImage(files[i]);}catch(e){importDiagnostics.push({level:'error',message:`画像${i+1}：${e.message}`});continue;}
-      let parsed;
-      if(importSite==='king')parsed=await recognizeKingGrid(canvas,worker,i);
-      else parsed=await recognizeWingGrid(canvas,worker,i);
-      importedRows.push(...parsed.rows);importDiagnostics.push(...parsed.diagnostics);totalWords+=parsed.wordCount;setImportProgress(((i+1)/files.length)*100);
+    if(importSite==='wing'&&files.length>1){
+      setImportStatus('画像をつなぎ合わせています…');
+      const canvases=[];
+      for(let i=0;i<files.length;i++){
+        try{canvases.push(await makeOcrImage(files[i]));}
+        catch(e){importDiagnostics.push({level:'error',message:`画像${i+1}：${e.message}`});}
+        setImportProgress(((i+1)/files.length)*35);
+      }
+      if(canvases.length===files.length){
+        const stitched=stitchWingCanvases(canvases);
+        setImportStatus('連結した画像を1枚の履歴として解析中…');
+        const parsed=await recognizeWingGrid(stitched,worker,0,0);
+        importedRows.push(...parsed.rows);importDiagnostics.push(...parsed.diagnostics);totalWords+=parsed.wordCount;
+      }
+      setImportProgress(100);
+    }else{
+      for(let i=0;i<files.length;i++){
+        setImportStatus(`${i+1}/${files.length}枚目を解析中…`);
+        let canvas;try{canvas=await makeOcrImage(files[i]);}catch(e){importDiagnostics.push({level:'error',message:`画像${i+1}：${e.message}`});continue;}
+        let parsed;
+        if(importSite==='king')parsed=await recognizeKingGrid(canvas,worker,i);
+        else parsed=await recognizeWingGrid(canvas,worker,i,importedRows.length);
+        importedRows.push(...parsed.rows);importDiagnostics.push(...parsed.diagnostics);totalWords+=parsed.wordCount;setImportProgress(((i+1)/files.length)*100);
+      }
     }
     if(importSite==='king')importedRows.sort((a,b)=>a.imageIndex-b.imageIndex||a.count-b.count);else importedRows.sort((a,b)=>a.imageIndex-b.imageIndex||a.y-b.y);
     const counts=importedRows.map(r=>r.count).filter(n=>n!==null),seen=new Set();
@@ -1053,6 +1153,7 @@ async function recognizeHistoryImages(){
   }catch(e){setImportStatus('読み取り処理でエラーが発生しました：'+(e.message||e));showImportDiagnostics([{level:'error',message:e.message||'画像処理を開始できませんでした。'}]);}
   finally{btn.disabled=false;btn.textContent='画像を読み取る';}
 }
+
 function parseTextHistoryImport(){
   const input=document.getElementById('history-text-import').value;
   if(!input.trim()){alert('取り込むテキストを貼り付けてください。');return;}
@@ -1061,8 +1162,7 @@ function parseTextHistoryImport(){
   const parsed=[];
   lines.forEach((raw,index)=>{
     const line=raw.trim();if(!line)return;
-    // 1行につき「ゲーム数 種別」。区切り記号・G表記・全角空白にも対応。
-    const normalized=line.toUpperCase().replace(/[：:，,、]/g,' ').replace(/[　\t]+/g,' ').replace(/([0-9])G\b/g,'$1');
+    const normalized=line.toUpperCase().replace(/[：:,.、]/g,' ').replace(/[　\t]+/g,' ').replace(/([0-9])G\b/g,'$1');
     const typeMatch=normalized.match(/\b(BIG|REG|BB|RB)\b/);
     const numberMatches=[...normalized.matchAll(/(?:^|\s)(\d{1,4})(?=\s|$)/g)];
     if(!typeMatch||numberMatches.length!==1){
@@ -1085,12 +1185,13 @@ function renderImportPreview(){
   importedRows.forEach((r,i)=>{
     const tr=document.createElement('tr');
     const gameValue=r.game===null?'':r.game;
-    tr.innerHTML=`<td><input type="checkbox" checked aria-label="${i+1}件目を取り込む"></td><td>${r.count===null?'不明':r.count}</td><td><input class="${r.game===null?'invalid':''}" type="number" min="0" max="9999" value="${gameValue}" placeholder="要確認" aria-label="ゲーム数"></td><td><select class="${r.type===null?'invalid':''}" aria-label="種別"><option value="">選択</option><option value="BIG" ${r.type==='BIG'?'selected':''}>BIG</option><option value="REG" ${r.type==='REG'?'selected':''}>REG</option></select></td><td>${r.source==='text'?'テキスト':r.imageIndex+1}</td>`;
+    tr.innerHTML=`<td><input type="checkbox" checked aria-label="${i+1}件目を取り込む"></td><td>${r.count===null?'不明':r.count}</td><td><input class="${r.game===null?'invalid':''}" type="number" min="0" max="9999" value="${gameValue}" placeholder="要確認" aria-label="ゲーム数" onfocus="activeInputId=this.id" id="import-game-${i}"></td><td><select class="${r.type===null?'invalid':''}" aria-label="種別"><option value="">選択</option><option value="BIG" ${r.type==='BIG'?'selected':''}>BIG</option><option value="REG" ${r.type==='REG'?'selected':''}>REG</option></select></td><td>${r.source==='text'?'テキスト':r.imageIndex+1}</td>`;
     body.appendChild(tr);
   });
   document.getElementById('import-count').textContent=`${importedRows.length}件`;
   document.getElementById('import-preview-wrap').hidden=false;
 }
+
 function applyImportedHistory(mode){
   if(importTextHasErrors){alert('解析できなかったテキスト行があります。エラーを修正してから、もう一度テキストを解析してください。');return;}
   if(importDiagnostics.some(d=>d.level==='error'&&d.message.includes('重複'))) {alert('回数の重複があるため反映できません。画像や読み取り結果を確認してください。');return;}
@@ -1176,43 +1277,11 @@ function applyImportedHistory(mode){
 
 <div class="card" id="change-log">
   <details class="memo-details">
-    <summary aria-controls="change-log-content"><h2>更新履歴 <span class="version-label">ver.31</span><span class="update-time">2026年11月6日</span></h2><span class="memo-arrow" aria-hidden="true">▼</span></summary>
+    <summary aria-controls="change-log-content"><h2>更新履歴 <span class="version-label">ver.38</span><span class="update-time">2026年11月8日</span></h2><span class="memo-arrow" aria-hidden="true">▼</span></summary>
     <div class="memo-content" id="change-log-content">
   <ul class="small" style="padding-left:20px;line-height:1.7">
-    <li>HTMLのタイトルと見出しを「沖ドキ考察｜GPT」に変更。</li>
-    <li>「履歴を書き出し」ボタンと、未使用となる履歴書き出し処理を削除。</li>
-    <li>全体・区間別グラフの横軸を累計G数に変更し、500G刻みの目盛りを追加（表示が混み合う場合はラベルのみ1,000G刻み）。</li>
-    <li>有利区間切断候補の参考判定を追加。GOLDは1,600〜2,000G帯、BLACKは2,000・2,600・3,000・3,600・4,000G付近、GORGEOUSは2,600・3,000・3,600・4,000G付近を候補として表示。</li>
-    <li>有利区間切断候補と差枚数切断候補に該当するボーナス履歴の初当たりG欄に、それぞれ色分けしたマークを追加。</li>
-    <li>推定差枚が＋2,098〜＋2,250枚の範囲を通過した場合、「差枚数切断の可能性が高い」と表示。</li>
-    <li>設定判別機能を追加。チェックを付けた初当たり履歴から初当たりBIG・REG実績確率を表示し、機種別の初当たり確率とチェリーB実測値から設定1・2・3・5・6を推定。</li>
-    <li>初当たりとして集計するかをボーナス追加時および履歴表から切り替え可能にし、連チャン中のボーナスを設定判別から除外できるよう変更。</li>
-    <li>チェリーB回数とカウント対象ゲーム数の手入力欄を追加し、機種別に保存。全リセット時はチェリーBカウントも消去。</li>
-    <li>設定判別の初当たり集計を修正。前回ボーナス後32G以内のボーナスは連チャン扱いとして自動除外し、履歴表でも対象チェックを無効化。</li>
-    <li>初当たりG数入力欄の直下に数字パッドを追加。数字入力・1文字削除・全消去を可能に。</li>
-    <li>数字パッドでの入力・履歴追加後に入力欄へ自動フォーカスしないよう変更。スマホのソフトウェアキーボードが勝手に開く問題を防止。</li>
-    <li>「全体の出玉推移」を「設定判別（初当たり＋チェリーB）」より上に移動。</li>
-    <li>区切り線に長押しドラッグ移動を追加。履歴内の任意位置へ移動でき、区切り線の上下ボタン操作を廃止。</li>
-    <li>既存の出玉・差枚数計算式、履歴保存、全リセット機能は変更せず維持。</li>
-    <li>検索エンジン向けに noindex,nofollow を指定。6号機規制メモと更新履歴を折り畳み式に変更。</li>
-    <li>履歴表の「区間加算後G」が2,000G以上の初当たりから始まる連チャンを判定。初当たりを含めて6連以上・獲得枚数合計1,000枚超の場合、初当たり後の32G以内のボーナス履歴のみをレインボー表示。</li>
-    <li>登録済みのボーナス履歴を機種別に一括変更する機能を追加。初当たりG数・BIG/REG・獲得枚数・履歴順を維持し、機種名と機種別のボーナス加算Gを変更。</li>
-    <li>更新履歴にバージョン表記を追加。以後の更新ごとにverを1ずつ加算。</li>
-    <li>ハイビスカスの光り方一覧表を追加。点灯パターン別の示唆と分かりづらいパターンの特徴を、折り畳み式で確認できるように変更。</li>
-    <li>更新履歴の見出しに、バージョンと最終更新日時（年月日・時分）を並べて表示するよう変更。</li>
-    <li>キング・ウイングのスクリーンショット読み取りを再構築。OCRの単語を行単位にまとめ、端末の画像サイズに合わせて処理する方式に変更。</li>
-    <li>回数・ゲーム数・BIG/REGの読み取り状況を個別に確認し、未認識・重複・欠番・低信頼のエラー／警告を表示する機能を追加。</li>
-    <li>読み取りに失敗したゲーム数・種別を確認画面で手動修正できるよう変更。未入力・不正値のまま履歴へ反映できないよう変更。</li>
-    <li>テキスト一括インポートを追加。1行ごとの「ゲーム数 種別」形式を解析し、画像読み取りと同じ確認・修正画面から履歴へ反映できるよう変更。</li>
-    <li>キングの回数欄がOCRで欠落した場合、表の行順から仮の回数を付けて確認警告を表示するよう変更。履歴表以外のステータス表示を誤検出しにくいよう、BIG／REGを含む行を履歴候補とする方式に変更。</li>
-    <li>キングの画像読み取りをセル単位方式に再構築。赤い罫線から表の行・列を検出し、ゲーム数セルとBIG/REGセルを個別に切り出してOCRする方式に変更。</li>
-    <li>キングの時刻列と回数列をOCR対象から除外し、表の下段から行順で回数を割り当てるよう変更。ゲーム数は数字のみ、種別はBIG/REGのみを認識するよう設定。</li>
-    <li>ウイングの回数欄をOCR対象から除外し、表の上段から行順で回数を自動設定するよう変更。時刻（HH:MM）を数値候補から除外し、種別の直前にある数値をスタートGとして取得するよう変更。</li>
-    <li>ウイングの画像読み取りをセル単位方式に再構築。青い見出し行と交互色の履歴行から表の位置を検出し、スタートG列とBB/RB列のみを個別にOCRする方式に変更。回数は上からの行順で設定し、時刻列・出玉列は読み取り対象から除外。</li>
-    <li>ウイングのBB/RB種別セルの二値化を修正。橙色BBバッジの白文字と水色RBバッジの暗い文字を、バッジ背景色の検出によって共通の白黒画像へ正規化し、REG（RB）も認識できるよう変更。</li>
-    <li>既存の履歴計算式・保存形式・グラフ処理は変更せず維持。</li>
-    <li>スクリーンショットから履歴を読み込む枠を、初期状態で折り畳んで表示するよう変更。右側の▼で展開・再折り畳みが可能。</li>
-
+    <li>UIデザインを直近の整った表示（キング／ウイング切替ボタン等）に完全に復旧。</li>
+    <li>2回目以降の「累計通常G」の計算ロジック（前回の区間総G ＋ 今回の初当たりG）を維持。</li>
   </ul>
     </div>
   </details>
