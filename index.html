@@ -114,7 +114,9 @@ tr.drop-after td{box-shadow:inset 0 -3px #00d4ff}
 .import-table .invalid{border-color:#ff6868!important;outline:1px solid #ff6868}
 </style>
 <div class="card import-card" id="image-import-card">
-  <h2>スクリーンショットから履歴を読み込む</h2>
+  <details class="memo-details">
+    <summary><h2>スクリーンショットから履歴を読み込む</h2><span class="memo-arrow" aria-hidden="true">▼</span></summary>
+    <div class="memo-content">
   <p class="small">データーサイトを選択して画像を読み込みます。読み取り結果を確認・修正してから履歴に反映できます。</p>
   <div class="site-choice" role="group" aria-label="データーサイト選択">
     <button type="button" id="site-king" class="selected" onclick="selectImportSite('king')">キング</button>
@@ -146,6 +148,8 @@ tr.drop-after td{box-shadow:inset 0 -3px #00d4ff}
       <button type="button" class="danger" onclick="applyImportedHistory('replace')">現在の履歴を置き換え</button>
     </div>
   </div>
+    </div>
+  </details>
 </div>
 
 
@@ -1172,7 +1176,7 @@ function applyImportedHistory(mode){
 
 <div class="card" id="change-log">
   <details class="memo-details">
-    <summary aria-controls="change-log-content"><h2>更新履歴 <span class="version-label">ver.29</span><span class="update-time">2026年11月6日</span></h2><span class="memo-arrow" aria-hidden="true">▼</span></summary>
+    <summary aria-controls="change-log-content"><h2>更新履歴 <span class="version-label">ver.31</span><span class="update-time">2026年11月6日</span></h2><span class="memo-arrow" aria-hidden="true">▼</span></summary>
     <div class="memo-content" id="change-log-content">
   <ul class="small" style="padding-left:20px;line-height:1.7">
     <li>HTMLのタイトルと見出しを「沖ドキ考察｜GPT」に変更。</li>
@@ -1207,6 +1211,7 @@ function applyImportedHistory(mode){
     <li>ウイングの画像読み取りをセル単位方式に再構築。青い見出し行と交互色の履歴行から表の位置を検出し、スタートG列とBB/RB列のみを個別にOCRする方式に変更。回数は上からの行順で設定し、時刻列・出玉列は読み取り対象から除外。</li>
     <li>ウイングのBB/RB種別セルの二値化を修正。橙色BBバッジの白文字と水色RBバッジの暗い文字を、バッジ背景色の検出によって共通の白黒画像へ正規化し、REG（RB）も認識できるよう変更。</li>
     <li>既存の履歴計算式・保存形式・グラフ処理は変更せず維持。</li>
+    <li>スクリーンショットから履歴を読み込む枠を、初期状態で折り畳んで表示するよう変更。右側の▼で展開・再折り畳みが可能。</li>
 
   </ul>
     </div>
