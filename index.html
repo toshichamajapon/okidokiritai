@@ -1,0 +1,1291 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<title>沖ドキ考察｜gemini</title>
+<style>
+:root{--bg:#1a1a1a;--card:#2a2a2a;--text:#e0e0e0;--sub:#aaa;--border:#444;--big:#ff453a;--reg:#0a84ff}
+*{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}
+body{background:var(--bg);color:var(--text);padding:12px;max-width:760px;margin:0 auto}
+h1{text-align:center;font-size:1.25rem;color:#fff;margin:4px 0 12px}
+h2{font-size:1rem;color:#fff;margin-bottom:8px}
+p{line-height:1.5}
+.small{font-size:.75rem;color:var(--sub);line-height:1.5}
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:12px;box-shadow:0 2px 5px #0004}
+.chart-title{text-align:center;font-size:.85rem;color:var(--sub);margin-bottom:6px}
+canvas{display:block;width:100%;height:180px;background:#181818;border-radius:6px}
+.summary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.metric{background:#333;border:1px solid #444;border-radius:7px;padding:9px;text-align:center;min-width:0}
+.metric .label{display:block;font-size:.74rem;color:var(--sub);margin-bottom:3px}
+.metric .value{font-size:1.05rem;font-weight:700;color:#fff;overflow-wrap:anywhere}
+label{display:block;font-size:.8rem;font-weight:700;color:var(--sub);margin-bottom:4px}
+.form-group{margin-bottom:10px}
+select,input[type=number],textarea{width:100%;padding:10px;border:1px solid var(--border);border-radius:6px;background:#333;color:#fff;font-size:1rem}
+.payout{display:flex;gap:10px}.payout .form-group{flex:1;min-width:0}
+.btns{display:flex;gap:8px;margin-top:8px}
+button{cursor:pointer}
+.bonus{flex:1;border:0;border-radius:8px;padding:13px;color:#fff;font-size:1.05rem;font-weight:bold}
+.big{background:var(--big)}.reg{background:var(--reg)}
+.actionbar{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px}
+.actions{display:flex;flex-wrap:wrap;gap:6px}
+.action{background:#444;color:#fff;border:1px solid #555;border-radius:5px;padding:7px 9px;font-size:.75rem}
+.site-choice{display:flex;gap:8px;margin:8px 0}
+.site-choice button{flex:1;padding:10px;border:1px solid #555;border-radius:6px;background:#333;color:#fff;font-weight:bold;font-size:.9rem}
+.site-choice button.selected{background:#0a84ff;border-color:#0a84ff}
+.import-actions{display:flex;gap:8px;margin-top:8px}
+.import-actions button{flex:1;padding:10px;border-radius:6px;font-weight:bold;font-size:.9rem;border:0}
+.import-actions button.primary{background:#0a84ff;color:#fff}
+.import-actions button.danger{background:#6b2020;color:#fff;border:1px solid #a33}
+.import-progress{height:6px;background:#444;border-radius:3px;overflow:hidden;margin:8px 0}
+#import-progress-bar{height:100%;background:#0a84ff;width:0%}
+.import-status,.import-error,.import-warning{font-size:.75rem;margin-top:6px;padding:6px 8px;border-radius:4px}
+.import-status{background:#242424;color:var(--sub)}
+.import-error{background:#401a1a;color:#ff8a80}
+.import-warning{background:#40361a;color:#ffca66}
+.import-table{width:100%;border-collapse:collapse;font-size:.77rem;text-align:center}
+.import-table th,.import-table td{padding:6px 4px;border-bottom:1px solid #383838}
+.import-table th{background:#333;color:#aaa}
+.import-table input[type=number]{padding:6px;font-size:.85rem}
+.import-table select{padding:6px;font-size:.85rem}
+.bulk-model-tools{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:0 0 10px;padding:9px;background:#242424;border:1px solid var(--border);border-radius:8px}
+.bulk-model-tools label{margin:0;white-space:nowrap}
+.bulk-model-tools select{flex:1;min-width:170px;padding:8px;border:1px solid var(--border);border-radius:6px;background:#333;color:#fff;font-size:.85rem}
+.danger{background:#6b2020;border-color:#a33}
+.tablewrap{overflow-x:auto;border:1px solid var(--border);border-radius:8px;background:var(--card)}
+table{width:100%;border-collapse:collapse;font-size:.77rem;text-align:center;white-space:nowrap}
+th,td{padding:8px 5px;border-bottom:1px solid #383838}
+th{background:#333;color:#aaa}
+tr.row-big{background:#3d1c1c}tr.row-reg{background:#1c2d3d}
+tr.row-sep{background:#ffe066;color:#111}tr.row-sep td{color:#111;font-weight:bold}
+.iconbtn{background:#383838;border:1px solid #555;color:#fff;border-radius:4px;width:25px;height:25px;margin:0 1px}
+.del{color:#ff8a80;border-color:#a33}
+.cut-mark{display:inline-block;margin:2px 1px 0;padding:2px 5px;border-radius:4px;font-size:.65rem;font-weight:700;white-space:normal;line-height:1.35}
+.cut-mark.game{background:#ffca66;color:#241900}
+.cut-mark.diff{background:#ff453a;color:#fff}
+.cut-marks{display:flex;flex-wrap:wrap;justify-content:center;gap:2px;margin-top:3px}
+.notice{background:#242424;border-left:3px solid #e0b341;padding:9px;border-radius:4px;font-size:.78rem;line-height:1.55;margin-top:8px}
+.bartrack{height:10px;background:#444;border-radius:6px;overflow:hidden;margin:6px 0}
+.barfill{height:100%;background:#0a84ff;width:0%;transition:width .2s}
+.reggrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.regbox{background:#333;border-radius:7px;padding:9px}
+.regbox strong{display:block;color:#fff;margin-bottom:4px}
+.empty{text-align:center;color:var(--sub);padding:18px}
+.setting-inputs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.setting-note{font-size:.75rem;color:var(--sub);line-height:1.55}.setting-result{background:#333;border:1px solid #444;border-radius:8px;padding:10px;margin:8px 0}.setting-result strong{color:#fff}.setting-row{display:grid;grid-template-columns:52px 1fr 52px;align-items:center;gap:8px;margin:8px 0;font-size:.8rem}.setting-row .bartrack{margin:0}.setting-row .barfill{background:#0a84ff}.setting-toggle{display:flex;align-items:flex-start;gap:7px;font-size:.8rem;color:var(--text);margin:8px 0}.setting-toggle input{margin-top:3px;accent-color:#0a84ff}
+.memo-details>summary{display:flex;align-items:center;justify-content:space-between;gap:12px;list-style:none;cursor:pointer;min-height:28px;touch-action:manipulation;user-select:none;-webkit-user-select:none}
+.memo-details>summary::-webkit-details-marker{display:none}
+.memo-details>summary h2{margin:0}
+.version-label{font-size:.5em;font-weight:500;color:#aaa;vertical-align:baseline;margin-left:3px}
+.update-time{font-size:.5em;font-weight:500;color:#aaa;vertical-align:baseline;margin-left:6px}
+.memo-details>summary .memo-arrow{flex:0 0 auto;color:var(--sub);font-size:.9rem;transition:transform .18s ease}
+.memo-details[open]>summary .memo-arrow{transform:rotate(180deg)}
+.memo-details>.memo-content{padding-top:12px}
+.hibi-table{width:100%;border-collapse:collapse;white-space:normal;text-align:left;font-size:.78rem}
+.hibi-table th,.hibi-table td{padding:8px 7px;border-bottom:1px solid #383838;vertical-align:top;line-height:1.45}
+.hibi-table th{background:#333;color:#aaa}
+.hibi-table td:first-child{font-weight:600;min-width:42%}
+.hibi-table .hint{color:#aaa;font-size:.72rem;font-weight:400}
+.hibi-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:8px}
+.hibi-note{font-size:.75rem;color:var(--sub);line-height:1.5;margin-bottom:8px}
+.keypad{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:7px;max-width:440px}
+.keypad button{min-height:48px;border:1px solid #554936;border-radius:8px;background:#f6e8d4;color:#252525;font-size:1.25rem;font-weight:600;touch-action:manipulation}
+.keypad button:active{background:#e8cda9;transform:scale(.98)}
+.keypad .key-func{font-size:1rem;background:#d9d9d9}
+#game-input{font-size:1.15rem;font-weight:700}
+tr.row-rainbow{background:linear-gradient(90deg,#ff4d4d 0%,#ff9f43 16%,#ffe66d 32%,#6bde79 48%,#55c7ff 64%,#8b75ff 80%,#ed6bcb 100%) !important;color:#171717;font-weight:700}
+tr.row-rainbow td{color:#171717 !important;border-bottom-color:#ffffff88}
+.row-sep td{position:relative}
+.sep-grip{display:inline-flex;align-items:center;gap:7px;padding:9px 12px;border:1px solid #8b741d;border-radius:7px;background:#f5d65c;color:#241d00;font-weight:700;touch-action:none;user-select:none;-webkit-user-select:none;cursor:grab}
+.sep-grip:active{cursor:grabbing}
+tr.dragging-sep{opacity:.35;outline:2px dashed #fff}
+tr.drop-before td{box-shadow:inset 0 3px #00d4ff}
+tr.drop-after td{box-shadow:inset 0 -3px #00d4ff}
+.drag-hint{font-size:.7rem;color:#5b4a0b;margin-left:5px}
+@media(max-width:420px){.keypad button{min-height:50px;font-size:1.3rem}}
+@media(max-width:420px){body{padding:8px}.card{padding:10px}.metric .value{font-size:.95rem}.reggrid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<h1>沖ドキ考察｜gemini</h1>
+
+<div class="card import-card" id="image-import-card">
+  <details class="memo-details">
+    <summary><h2>スクリーンショットから履歴を読み込む</h2><span class="memo-arrow" aria-hidden="true">▼</span></summary>
+    <div class="memo-content">
+  <p class="small">データーサイトを選択して画像を読み込みます。読み取り結果を確認・修正してから履歴に反映できます。</p>
+  <div class="site-choice" role="group" aria-label="データーサイト選択">
+    <button type="button" id="site-king" class="selected" onclick="selectImportSite('king')">キング</button>
+    <button type="button" id="site-wing" onclick="selectImportSite('wing')">ウイング</button>
+  </div>
+  <p id="import-rule" class="small">キング：下から上へ読み取り。ゲーム数・BIG/REGを使用し、時間は無視します。</p>
+  <div class="form-group" style="margin-top:10px">
+    <label for="history-images">スクリーンショット（複数選択可）</label>
+    <input id="history-images" type="file" accept="image/*" multiple>
+  </div>
+  <div class="import-actions"><button type="button" class="primary" id="recognize-button" onclick="recognizeHistoryImages()">画像を読み取る</button></div>
+  <details class="memo-details" style="margin-top:12px" open>
+    <summary><strong>テキスト一括インポート</strong></summary>
+    <div style="padding-top:10px">
+      <p class="small">画像をGPTなどでテキスト化した場合は、ここに貼り付けてください。1行につき「ゲーム数 種別」の形式で入力します。例：584 REG ／ 27 BIG。順番は古い履歴から新しい履歴です。</p>
+      <textarea id="history-text-import" rows="7" placeholder="584 REG&#10;162 REG&#10;6 REG&#10;628 REG&#10;216 BIG&#10;139 REG&#10;4 REG&#10;3 REG&#10;5 BIG&#10;1 BIG&#10;32 BIG&#10;27 BIG" style="width:100%;box-sizing:border-box;padding:10px;background:#222;color:#fff;border:1px solid #666;border-radius:7px;font:inherit"></textarea>
+      <div class="import-actions"><button type="button" class="primary" onclick="parseTextHistoryImport()">テキストを解析する</button><button type="button" onclick="document.getElementById('history-text-import').value='';">入力をクリア</button></div>
+    </div>
+  </details>
+  <div id="import-progress-wrap" class="import-progress" hidden><div id="import-progress-bar"></div></div>
+  <div id="import-status" class="import-status" aria-live="polite">初回は文字読み取りエンジンの読み込みに少し時間がかかります。画像はこのブラウザ内で処理します。</div>
+  <div id="import-diagnostics" class="import-status" aria-live="polite" hidden></div>
+  <div id="import-preview-wrap" hidden style="margin-top:12px">
+    <div class="actionbar"><strong>読み取り結果（確認・修正）</strong><span id="import-count" class="small"></span></div>
+    <div class="tablewrap"><table class="import-table"><thead><tr><th>取込</th><th>回数</th><th>ゲーム数</th><th>種別</th><th>画像</th></tr></thead><tbody id="import-preview"></tbody></table></div>
+    <p class="small" style="margin-top:7px">数字・BIG/REGの誤認識があれば、この表で修正してください。チェックを外した行は反映されません。</p>
+    <div class="import-actions">
+      <button type="button" class="primary" onclick="applyImportedHistory('append')">現在の履歴に追加</button>
+      <button type="button" class="danger" onclick="applyImportedHistory('replace')">現在の履歴を置き換え</button>
+    </div>
+  </div>
+    </div>
+  </details>
+</div>
+
+<div class="card">
+  <h2>機種・獲得枚数設定</h2>
+  <div class="form-group">
+    <label for="model-select">新しく追加する履歴の機種</label>
+    <select id="model-select" onchange="onModelChange()">
+      <option value="gold">沖ドキ！GOLD（BIG +69G / REG +29G）</option>
+      <option value="black">沖ドキ！BLACK（BIG +59G / REG +24G）</option>
+      <option value="gorgeous">沖ドキ！GORGEOUS（BIG +59G / REG +24G）</option>
+    </select>
+  </div>
+  <div class="payout">
+    <div class="form-group"><label for="big-payout">BIG獲得枚数（推定値）</label><input id="big-payout" type="number" value="210" step="0.1"></div>
+    <div class="form-group"><label for="reg-payout">REG獲得枚数（推定値）</label><input id="reg-payout" type="number" value="100" step="0.1"></div>
+  </div>
+  <div class="form-group"><label for="game-input">初当たりG数（前回ボーナス後のG数）</label><input id="game-input" type="number" min="0" placeholder="例：125" inputmode="numeric" oninput="suggestInitialHit()" onfocus="activeInputId='game-input'"></div>
+  <div class="keypad" aria-label="初当たりG数 数字入力パッド">
+    <button type="button" onclick="keypadInput('1')">1</button><button type="button" onclick="keypadInput('2')">2</button><button type="button" onclick="keypadInput('3')">3</button>
+    <button type="button" onclick="keypadInput('4')">4</button><button type="button" onclick="keypadInput('5')">5</button><button type="button" onclick="keypadInput('6')">6</button>
+    <button type="button" onclick="keypadInput('7')">7</button><button type="button" onclick="keypadInput('8')">8</button><button type="button" onclick="keypadInput('9')">9</button>
+    <button type="button" class="key-func" onclick="keypadClear()">消去</button><button type="button" onclick="keypadInput('0')">0</button><button type="button" class="key-func" onclick="keypadBackspace()">⌫</button>
+  </div>
+  <label class="setting-toggle"><input id="is-initial-hit" type="checkbox" checked>このボーナスを設定判別用の初当たりとして集計する</label>
+  <p id="initial-hit-hint" class="small" style="margin-top:5px">32G以内のボーナスは連チャン扱いとして、設定判別の初当たりから自動除外します。</p>
+  <div class="btns"><button class="bonus big" onclick="addHistory('BIG')">BIG</button><button class="bonus reg" onclick="addHistory('REG')">REG</button></div>
+  <p class="small" style="margin-top:8px">機種ごとの獲得枚数は推定用の初期値です。実際の獲得枚数に合わせて編集できます。設定は追加時の履歴に保存されます。</p>
+</div>
+
+<div class="actionbar">
+  <strong>ボーナス履歴</strong>
+  <div class="actions">
+    <button class="action" onclick="addSeparator()">区切り線追加</button>
+    <button class="action danger" onclick="resetAll()">全リセット</button>
+  </div>
+</div>
+<div class="bulk-model-tools">
+  <label for="bulk-model-select">登録済み履歴の機種を一括変更</label>
+  <select id="bulk-model-select">
+    <option value="gold">沖ドキ！GOLD</option>
+    <option value="black">沖ドキ！BLACK</option>
+    <option value="gorgeous">沖ドキ！GORGEOUS</option>
+  </select>
+  <button type="button" class="action" onclick="bulkChangeModel()">一括変更</button>
+  <p class="small" style="width:100%">初当たりG数・BIG/REG・獲得枚数・履歴順はそのままに、機種名と機種別のボーナス加算Gを変更します。</p>
+</div>
+<div class="tablewrap">
+<table>
+<thead><tr><th>#</th><th>機種</th><th>初当たりG</th><th>累計通常G</th><th>区間総G</th><th>推定差枚</th><th>推定機械割</th><th>設定判別</th><th>操作</th></tr></thead>
+<tbody id="history-list"></tbody>
+</table>
+<div id="empty-message" class="empty">履歴がありません</div>
+</div>
+
+<div class="card">
+  <h2>全体の出玉推移</h2>
+  <div class="chart-title">推定差枚数（縦軸：500枚刻み／横軸：累計G数・500G刻み）</div>
+  <canvas id="overall-chart"></canvas>
+  <div class="summary" style="margin-top:8px">
+    <div class="metric"><span class="label">累計初当たりG</span><span class="value" id="sum-total-g">0 G</span></div>
+    <div class="metric"><span class="label">累計ボーナス加算G</span><span class="value" id="sum-add-g">0 G</span></div>
+    <div class="metric"><span class="label">推定累計差枚</span><span class="value" id="sum-diff">0 枚</span></div>
+    <div class="metric"><span class="label">推定機械割</span><span class="value" id="sum-rate">—</span></div>
+  </div>
+</div>
+
+<div class="card" id="setting-analysis-card">
+  <h2>設定判別（初当たり＋チェリーB）</h2>
+  <p class="setting-note">対象機種は上の「新しく追加する履歴の機種」と連動します。設定判別にはチェックを付けた初当たり履歴だけを使います。連チャン中のボーナスは追加時にチェックを外すか、履歴表の「設定判別」欄でチェックを外してください。過去の履歴も表から切り替えできます。</p>
+  <div class="setting-inputs" style="margin-top:10px">
+    <div class="form-group"><label for="cherry-b-count">チェリーB回数（手入力）</label><input id="cherry-b-count" type="number" min="0" step="1" value="0" oninput="saveCherryInputs()" onfocus="activeInputId='cherry-b-count'"></div>
+    <div class="form-group"><label for="cherry-b-games">チェリーBを数えたゲーム数</label><input id="cherry-b-games" type="number" min="0" step="1" value="0" oninput="saveCherryInputs()" onfocus="activeInputId='cherry-b-games'"></div>
+  </div>
+  <p class="setting-note">チェリーB回数と、その回数を数えた総ゲーム数を入力してください。設定判別用の初当たりゲーム数とは別に管理します。</p>
+  <div id="setting-results"><p class="empty">初当たり履歴またはチェリーBのカウントを入力すると、設定推測を表示します。</p></div>
+  <p class="notice">推定設定は、提示された設定1・2・3・5・6の数値を等しい事前確率として比較した参考値です。設定4はデータがないため対象外です。試行回数が少ない場合や、初当たりの数え方・チェリーBのカウント対象ゲームが不正確な場合は推定が大きくブレます。BB・RBの公表確率は連チャンを含むため、初当たりだけの設定推測には直接混ぜていません。</p>
+</div>
+
+<div class="card">
+  <h2>有利区間ゲーム数の目安</h2>
+  <div class="reggrid">
+    <div class="regbox"><strong>GOLD / BLACK</strong><span>上限目安：4,000G</span><div class="bartrack"><div class="barfill" id="interval-bar-4000"></div></div><span id="interval-text-4000" class="small">区間加算後G：0 / 4,000G</span></div>
+    <div class="regbox"><strong>GORGEOUS</strong><span>上限目安：6,000G</span><div class="bartrack"><div class="barfill" id="interval-bar-6000"></div></div><span id="interval-text-6000" class="small">区間加算後G：0 / 6,000G</span></div>
+  </div>
+  <p class="notice">このメーターは、履歴の「区切り線」から数えた初当たりG＋ボーナス加算Gによる参考値です。実機の有利区間ゲーム数・リセットを自動検知するものではありません。異なる機種を同じ履歴に混在させた場合は、機種ごとの表示が参考値になります。</p>
+</div>
+
+<div class="card">
+  <h2>有利区間・差枚数切断の自動推定</h2>
+  <div id="cut-analysis"><p class="empty">履歴を入力すると参考判定を表示します。</p></div>
+  <p class="notice">自動推定は実機の内部状態を確認するものではありません。手動の区切り線ごとに履歴から推定したゲーム数・差枚数を使い、切断候補を参考表示します。内部差枚数やモード、ボーナス中の正確な差枚推移は履歴だけでは再現できないため、確定判定には使用しないでください。</p>
+</div>
+
+<div class="card">
+  <h2>有利区間ごとの出玉推移</h2>
+  <p class="small" style="margin-bottom:8px">「区切り線追加」を押すと、その位置から次の区間として推定差枚を0枚から集計します。</p>
+  <div id="interval-charts"><p class="empty">履歴を入力すると区間別グラフが表示されます。</p></div>
+</div>
+
+<div class="card">
+  <details class="memo-details">
+    <summary aria-controls="regulation-memo-content"><h2>6号機規制メモ</h2><span class="memo-arrow" aria-hidden="true">▼</span></summary>
+    <div class="memo-content" id="regulation-memo-content">
+      <div class="reggrid">
+        <div class="regbox"><strong>短期出玉率試験（400G）</strong>下限 33.3%超 / 上限 220%未満</div>
+        <div class="regbox"><strong>中期出玉率試験（1,600G）</strong>下限 40%超 / 上限 150%未満</div>
+        <div class="regbox"><strong>長期出玉率試験（6,000G）</strong>下限 50%超 / 上限 126%未満</div>
+        <div class="regbox"><strong>超長期出玉率試験（17,500G）</strong>下限 60%超 / 上限 115%未満</div>
+      </div>
+      <p class="notice">この規制メモは試験基準の参考表示です。履歴から算出する「推定機械割」は、実機の出玉率試験と同じ計測方法ではないため、適合・不適合や規制到達を判定できません。</p>
+      <p class="small" style="margin-top:8px">有利区間の上限表示：GOLD / BLACK は4,000G、GORGEOUS は6,000Gを目安として表示。コンプリート機能（差枚数による作動）は実際の台の総差枚や状態が必要なため、この履歴だけでは自動判定しません。</p>
+    </div>
+  </details>
+</div>
+
+<script>
+const MODEL_CONFIG={
+  gold:{name:'ゴールド',bigAdd:69,regAdd:29,defaultBig:210,defaultReg:87.5,limit:4000},
+  black:{name:'ブラック',bigAdd:59,regAdd:24,defaultBig:210,defaultReg:87.5,limit:4000},
+  gorgeous:{name:'ゴージャス',bigAdd:59,regAdd:24,defaultBig:210,defaultReg:87.5,limit:6000}
+};
+const ORIGINAL_COST_PER_INITIAL_G=1.5625;
+const STORAGE_KEY='okidoki_考察_histories';
+const CHERRY_STORAGE_KEY='okidoki_考察_cherryB_counts';
+const SETTING_DATA={
+  gold:{initial:[299.6,287.3,266.7,247.6,237.0],cherryB:[168.0,152.4,145.6,136.5,128.0]},
+  black:{initial:[288.7,277.9,265.8,254.1,243.1],cherryB:[168.0,152.4,145.6,136.5,128.5]},
+  gorgeous:{initial:[288.7,278.4,267.2,256.5,246.4],cherryB:[168.0,152.4,145.6,136.5,128.5]}
+};
+const SETTING_NUMBERS=[1,2,3,5,6];
+let histories=[];
+let cherryCounters={gold:{count:0,games:0},black:{count:0,games:0},gorgeous:{count:0,games:0}};
+let activeInputId='game-input';
+
+document.addEventListener('focusin',(e)=>{
+  if(e.target.tagName==='INPUT'&&(e.target.type==='number'||e.target.type==='text')){
+    activeInputId=e.target.id||'';
+  }
+});
+
+function keypadInput(digit){
+  const input=document.getElementById(activeInputId)||document.getElementById('game-input');
+  if(!input)return;
+  const current=String(input.value||'');
+  input.value=(current==='0'?'':current)+digit;
+  input.dispatchEvent(new Event('input'));
+  if(activeInputId==='game-input') suggestInitialHit();
+}
+function keypadBackspace(){
+  const input=document.getElementById(activeInputId)||document.getElementById('game-input');
+  if(!input)return;
+  const current=String(input.value||'');
+  input.value=current.slice(0,-1);
+  input.dispatchEvent(new Event('input'));
+  if(activeInputId==='game-input') suggestInitialHit();
+}
+function keypadClear(){
+  const input=document.getElementById(activeInputId)||document.getElementById('game-input');
+  if(!input)return;
+  input.value='';
+  input.dispatchEvent(new Event('input'));
+  if(activeInputId==='game-input') suggestInitialHit();
+}
+
+window.addEventListener('load',()=>{
+  try{const saved=localStorage.getItem(STORAGE_KEY);if(saved)histories=JSON.parse(saved)||[];}catch(e){histories=[];}
+  try{const savedCherry=localStorage.getItem(CHERRY_STORAGE_KEY);if(savedCherry)cherryCounters={...cherryCounters,...JSON.parse(savedCherry)};}catch(e){}
+  onModelChange();render();
+});
+window.addEventListener('resize',()=>renderCharts());
+
+function onModelChange(){
+  const config=MODEL_CONFIG[document.getElementById('model-select').value];
+  document.getElementById('big-payout').value=config.defaultBig;
+  document.getElementById('reg-payout').value=config.defaultReg;
+  loadCherryInputs();
+  renderSettingAnalysis();
+}
+function saveLocal(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(histories));}catch(e){alert('このブラウザでは履歴を保存できませんでした。');}}
+function loadCherryInputs(){
+  const key=document.getElementById('model-select').value,values=cherryCounters[key]||{count:0,games:0};
+  document.getElementById('cherry-b-count').value=values.count||0;
+  document.getElementById('cherry-b-games').value=values.games||0;
+}
+function saveCherryInputs(){
+  const key=document.getElementById('model-select').value;
+  const count=Math.max(0,Math.floor(Number(document.getElementById('cherry-b-count').value)||0));
+  const games=Math.max(0,Math.floor(Number(document.getElementById('cherry-b-games').value)||0));
+  cherryCounters[key]={count,games};
+  try{localStorage.setItem(CHERRY_STORAGE_KEY,JSON.stringify(cherryCounters));}catch(e){}
+  renderSettingAnalysis();
+}
+function fmt(n){return (Math.round(n*10)/10).toLocaleString('ja-JP');}
+function isBonus(item){return item.type==='bonus';}
+function totalInitialG(items=histories){return items.filter(isBonus).reduce((s,x)=>s+(Number(x.initialG)||0),0);}
+function totalAddG(items=histories){return items.filter(isBonus).reduce((s,x)=>s+(Number(x.addG)||0),0);}
+function totalPayout(items=histories){return items.filter(isBonus).reduce((s,x)=>s+(Number(x.payout)||0),0);}
+function originalInCost(item){return (Number(item.initialG)||0)*ORIGINAL_COST_PER_INITIAL_G;}
+function itemDiff(item){return (Number(item.payout)||0)-originalInCost(item);}
+
+function suggestInitialHit(){
+  const input=document.getElementById('game-input');
+  const g=parseInt(input.value,10);
+  const checkbox=document.getElementById('is-initial-hit');
+  const hint=document.getElementById('initial-hit-hint');
+  if(!Number.isFinite(g)){checkbox.checked=true;hint.textContent='32G以内のボーナスは連チャン扱いとして、設定判別の初当たりから自動除外します。';return;}
+  const isChain=g<=32;
+  checkbox.checked=!isChain;
+  hint.textContent=isChain?'32G以内のため連チャン扱いです。設定判別の初当たりには自動で含めません。':'33G以上のため初当たり候補として集計します。';
+}
+function isSettingInitialHit(item){return Number(item.initialG)>32&&item.isInitialHit!==false;}
+function addHistory(type){
+  const input=document.getElementById('game-input'),g=parseInt(input.value,10);
+  if(!Number.isFinite(g)||g<0){alert('0以上の初当たりG数を入力してください。');return;}
+  const key=document.getElementById('model-select').value,config=MODEL_CONFIG[key];
+  const big=parseFloat(document.getElementById('big-payout').value),reg=parseFloat(document.getElementById('reg-payout').value);
+  const payout=type==='BIG'?big:reg;
+  if(!Number.isFinite(payout)||payout<0){alert('獲得枚数を0以上で入力してください。');return;}
+  histories.push({id:Date.now()+Math.random(),type:'bonus',modelKey:key,modelName:config.name,bonusType:type,initialG:g,addG:type==='BIG'?config.bigAdd:config.regAdd,payout,isInitialHit:g>32&&document.getElementById('is-initial-hit').checked});
+  saveLocal();render();input.value='';document.getElementById('is-initial-hit').checked=true;document.getElementById('initial-hit-hint').textContent='32G以内のボーナスは連チャン扱いとして、設定判別の初当たりから自動除外します。';
+}
+function addSeparator(){
+  const count=histories.filter(x=>x.type==='separator').length+1;
+  histories.push({id:Date.now()+Math.random(),type:'separator',name:`区切り線 ${count}`});
+  saveLocal();render();
+}
+function moveItem(index,dir){
+  const target=index+dir;if(target<0||target>=histories.length)return;
+  [histories[index],histories[target]]=[histories[target],histories[index]];
+  saveLocal();render();
+}
+let separatorPressTimer=null,dragSeparatorId=null,dragSourceRow=null,dragTargetIndex=null,dragTargetAfter=false;
+function clearDropMarks(){document.querySelectorAll('tr.drop-before,tr.drop-after').forEach(row=>row.classList.remove('drop-before','drop-after'));}
+function beginSeparatorDrag(id,handle){
+  dragSeparatorId=id;dragSourceRow=handle.closest('tr');dragSourceRow?.classList.add('dragging-sep');
+  document.body.style.userSelect='none';document.body.style.webkitUserSelect='none';
+}
+function updateSeparatorDrag(x,y){
+  if(dragSeparatorId===null)return;
+  clearDropMarks();
+  const target=document.elementFromPoint(x,y)?.closest('tr[data-index]');
+  if(!target||target===dragSourceRow){dragTargetIndex=null;return;}
+  const rect=target.getBoundingClientRect();dragTargetAfter=y>rect.top+rect.height/2;
+  dragTargetIndex=Number(target.dataset.index);target.classList.add(dragTargetAfter?'drop-after':'drop-before');
+}
+function finishSeparatorDrag(){
+  if(dragSeparatorId===null)return;
+  const from=histories.findIndex(x=>x.id===dragSeparatorId);
+  if(from>=0&&dragTargetIndex!==null){
+    const [item]=histories.splice(from,1);
+    let to=dragTargetIndex+(dragTargetAfter?1:0);if(from<to)to--;
+    to=Math.max(0,Math.min(histories.length,to));histories.splice(to,0,item);saveLocal();
+  }
+  dragSourceRow?.classList.remove('dragging-sep');clearDropMarks();
+  document.body.style.userSelect='';document.body.style.webkitUserSelect='';
+  dragSeparatorId=null;dragSourceRow=null;dragTargetIndex=null;render();
+}
+document.addEventListener('pointerdown',event=>{
+  const handle=event.target.closest('.sep-grip');if(!handle)return;
+  const id=Number(handle.dataset.separatorId);
+  separatorPressTimer=setTimeout(()=>{separatorPressTimer=null;beginSeparatorDrag(id,handle);},360);
+});
+document.addEventListener('pointermove',event=>{
+  if(separatorPressTimer!==null&&Math.abs(event.movementX)+Math.abs(event.movementY)>12){clearTimeout(separatorPressTimer);separatorPressTimer=null;}
+  if(dragSeparatorId!==null){event.preventDefault();updateSeparatorDrag(event.clientX,event.clientY);}
+},{passive:false});
+document.addEventListener('pointerup',()=>{if(separatorPressTimer!==null){clearTimeout(separatorPressTimer);separatorPressTimer=null;}if(dragSeparatorId!==null)finishSeparatorDrag();});
+document.addEventListener('pointercancel',()=>{if(separatorPressTimer!==null){clearTimeout(separatorPressTimer);separatorPressTimer=null;}if(dragSeparatorId!==null)finishSeparatorDrag();});
+
+function bulkChangeModel(){
+  const key=document.getElementById('bulk-model-select').value;
+  const config=MODEL_CONFIG[key];
+  const count=histories.filter(isBonus).length;
+  if(!count){alert('変更できるボーナス履歴がありません。');return;}
+  const targetName=config.name;
+  if(!confirm(`登録済みのボーナス履歴 ${count}件を「沖ドキ！${targetName.toUpperCase()}」に一括変更しますか？\n\n初当たりG数・BIG/REG・獲得枚数・履歴順は維持し、機種名とボーナス加算Gを変更します。`))return;
+  histories.forEach(item=>{
+    if(!isBonus(item))return;
+    item.modelKey=key;
+    item.modelName=config.name;
+    item.addG=item.bonusType==='BIG'?config.bigAdd:config.regAdd;
+  });
+  saveLocal();render();
+  alert(`${count}件の履歴を「沖ドキ！${targetName}」に変更しました。`);
+}
+function deleteHistory(id){histories=histories.filter(x=>x.id!==id);saveLocal();render();}
+function setInitialHit(index,checked){if(!histories[index]||!isBonus(histories[index]))return;histories[index].isInitialHit=Boolean(checked);saveLocal();render();}
+function resetAll(){if(confirm('すべての履歴とチェリーBカウントを消去しますか？')){histories=[];cherryCounters={gold:{count:0,games:0},black:{count:0,games:0},gorgeous:{count:0,games:0}};try{localStorage.setItem(CHERRY_STORAGE_KEY,JSON.stringify(cherryCounters));}catch(e){};saveLocal();loadCherryInputs();render();}}
+
+function buildSections(){
+  const sections=[];
+  let section={index:1,items:[],g:0,addG:0,diff:0,data:[0],games:[0],modelKeys:new Set()};
+  let prevSectionTotal=0;
+  let isFirstInSection=true;
+
+  histories.forEach(item=>{
+    if(item.type==='separator'){
+      if(section.items.length)sections.push(section);
+      section={index:sections.length+1,items:[],g:0,addG:0,diff:0,data:[0],games:[0],modelKeys:new Set()};
+      prevSectionTotal=0;
+      isFirstInSection=true;
+    }else{
+      const initialG=Number(item.initialG)||0;
+      const addG=Number(item.addG)||0;
+      let cumNormal=0;
+      if(isFirstInSection){
+        cumNormal=initialG;
+        isFirstInSection=false;
+      }else{
+        cumNormal=prevSectionTotal+initialG;
+      }
+      const sectionTotal=cumNormal+addG;
+      prevSectionTotal=sectionTotal;
+
+      section.items.push({...item, calcCumNormal:cumNormal, calcSectionTotal:sectionTotal});
+      section.g=cumNormal;
+      section.addG+=addG;
+      section.diff+=itemDiff(item);
+      section.data.push(section.diff);
+      section.games.push(sectionTotal);
+      section.modelKeys.add(item.modelKey||'unknown');
+    }
+  });
+  if(section.items.length)sections.push(section);
+  return sections;
+}
+
+function getRainbowBonusIds(){
+  const ids=new Set();
+  let cumulativeActiveG=0,cumulativeDiff=0,sectionG=0,sectionAddG=0;
+  const entries=[];
+  histories.forEach(item=>{
+    if(item.type==='separator'){
+      sectionG=0;sectionAddG=0;entries.push(null);return;
+    }
+    const initialG=Number(item.initialG)||0;
+    const addG=Number(item.addG)||0;
+    cumulativeActiveG+=initialG+addG;
+    cumulativeDiff+=itemDiff(item);
+    sectionG+=initialG;sectionAddG+=addG;
+    const totalIn=cumulativeActiveG*3;
+    const totalOut=totalIn+cumulativeDiff;
+    const displayedRate=totalIn>0?(totalOut/totalIn)*100:null;
+    entries.push({item,sectionGame:sectionG+sectionAddG,displayedRate});
+  });
+
+  for(let i=0;i<entries.length;i++){
+    const start=entries[i];
+    if(!start||Number(start.item.initialG)<=32||start.sectionGame<2000||start.displayedRate===null||start.displayedRate<65)continue;
+    const chain=[start];
+    for(let j=i+1;j<entries.length;j++){
+      const next=entries[j];
+      if(!next||Number(next.item.initialG)>32)break;
+      chain.push(next);
+    }
+    const chainPayout=chain.reduce((sum,x)=>sum+(Number(x.item.payout)||0),0);
+    if(chain.length>=6&&chainPayout>1000){
+      chain.slice(1).forEach(x=>ids.add(x.item.id));
+      i+=chain.length-1;
+    }
+  }
+  return ids;
+}
+
+function render(){
+  const tbody=document.getElementById('history-list');tbody.innerHTML='';
+  const empty=document.getElementById('empty-message');empty.style.display=histories.length?'none':'block';
+  let cumDiffCoins=0,bonusCount=0;
+  const overallData=[0],overallGames=[0],sections=buildSections();
+  const cutMarks=getCutMarks(sections);
+  const rainbowIds=getRainbowBonusIds();
+
+  const calcMap=new Map();
+  sections.forEach(sec=>{
+    sec.items.forEach(item=>{
+      calcMap.set(item.id, {cumNormal: item.calcCumNormal, sectionTotal: item.calcSectionTotal});
+    });
+  });
+
+  histories.forEach((item,index)=>{
+    const tr=document.createElement('tr');
+    tr.dataset.index=index;
+    const controls=item.type==='separator'?`<button class="iconbtn del" onclick="deleteHistory(${Number(item.id)})" aria-label="区切り線を削除">✕</button>`:`<button class="iconbtn" onclick="moveItem(${index},-1)" ${index===0?'disabled':''}>▲</button><button class="iconbtn" onclick="moveItem(${index},1)" ${index===histories.length-1?'disabled':''}>▼</button><button class="iconbtn del" onclick="deleteHistory(${Number(item.id)})">✕</button>`;
+    
+    if(item.type==='separator'){
+      tr.className='row-sep';
+      tr.innerHTML=`<td colspan="8"><button type="button" class="sep-grip" data-separator-id="${Number(item.id)}" aria-label="区切り線を長押しして移動">⠿ ${escapeHtml(item.name||'区切り線')} <span class="drag-hint">長押しで自由移動</span></button></td><td>${controls}</td>`;
+    }else{
+      bonusCount++;
+      const calcData=calcMap.get(item.id)||{cumNormal: Number(item.initialG)||0, sectionTotal: (Number(item.initialG)||0)+(Number(item.addG)||0)};
+      const cumNormal=calcData.cumNormal;
+      const intervalGameEstimate=calcData.sectionTotal;
+
+      cumDiffCoins+=itemDiff(item);
+      overallData.push(cumDiffCoins);
+      overallGames.push(intervalGameEstimate);
+
+      const totalIn=intervalGameEstimate*3,totalOut=totalIn+cumDiffCoins;
+      const rate=totalIn>0?(totalOut/totalIn)*100:null;
+
+      tr.className=(item.bonusType==='BIG'?'row-big':'row-reg')+(rainbowIds.has(item.id)?' row-rainbow':'');
+      const d=cumDiffCoins>=0?'+'+fmt(cumDiffCoins):fmt(cumDiffCoins);
+      const marks=cutMarks.get(item.id)||[];
+      const marksHtml=marks.length?`<div class="cut-marks">${marks.map(m=>`<span class="cut-mark ${m.kind}" title="${escapeHtml(m.title)}">${m.kind==='diff'?'⚡差枚数切断':'🌀切断候補'}</span>`).join('')}</div>`:'';
+      
+      tr.innerHTML=`<td>${bonusCount}</td><td>${escapeHtml(item.modelName||'')}</td><td>${fmt(item.initialG)}G${marksHtml}</td><td>${fmt(cumNormal)}G</td><td>${fmt(intervalGameEstimate)}G</td><td style="color:${cumDiffCoins>=0?'#ff7b72':'#75bfff'}">${d}</td><td>${rate===null?'—':rate.toFixed(1)+'%'}</td><td><input aria-label="${bonusCount}回目を設定判別に含める" type="checkbox" ${isSettingInitialHit(item)?'checked':''} ${Number(item.initialG)<=32?'disabled title="32G以内のため連チャン扱いで自動除外"':''} onchange="setInitialHit(${index},this.checked)" style="accent-color:#0a84ff;width:18px;height:18px"></td><td>${controls}</td>`;
+    }
+    tbody.appendChild(tr);
+  });
+
+  const allInitialG=totalInitialG(),allAddG=totalAddG(),allPayout=totalPayout();
+  const allActiveG=allInitialG+allAddG;
+  const allDiff=histories.filter(isBonus).reduce((sum,item)=>sum+itemDiff(item),0);
+  const totalIn=allActiveG*3,totalOut=totalIn+allDiff;
+  const allRate=totalIn>0?(totalOut/totalIn)*100:null;
+  document.getElementById('sum-total-g').textContent=fmt(allInitialG)+' G';
+  document.getElementById('sum-add-g').textContent=fmt(allAddG)+' G';
+  document.getElementById('sum-diff').textContent=(allDiff>0?'+':'')+fmt(allDiff)+' 枚';
+  document.getElementById('sum-diff').style.color=allDiff>0?'#ff7b72':allDiff<0?'#75bfff':'#fff';
+  document.getElementById('sum-rate').textContent=allRate===null?'—':allRate.toFixed(1)+'%';
+  
+  updateRegMeters(sections);
+  renderCutAnalysis(sections);
+  renderSettingAnalysis();
+  renderCharts(overallData,sections,overallGames);
+}
+
+function renderSettingAnalysis(){
+  const holder=document.getElementById('setting-results');
+  if(!holder)return;
+  const key=document.getElementById('model-select')?.value||'gold';
+  const config=MODEL_CONFIG[key],data=SETTING_DATA[key];
+  const selected=histories.filter(item=>isBonus(item)&&(item.modelKey||'gold')===key&&isSettingInitialHit(item));
+  const totalG=selected.reduce((sum,item)=>sum+(Number(item.initialG)||0),0);
+  const bigCount=selected.filter(item=>item.bonusType==='BIG').length;
+  const regCount=selected.filter(item=>item.bonusType==='REG').length;
+  const hitCount=selected.length;
+  const bigRate=bigCount>0&&totalG>0?totalG/bigCount:null;
+  const regRate=regCount>0&&totalG>0?totalG/regCount:null;
+  const cherryCount=Math.max(0,Math.floor(Number(document.getElementById('cherry-b-count')?.value)||0));
+  const cherryGames=Math.max(0,Math.floor(Number(document.getElementById('cherry-b-games')?.value)||0));
+  const cherryValid=cherryGames>0&&cherryCount<=cherryGames;
+  const hasHitData=hitCount>0&&totalG>0;
+  if(!hasHitData&&!cherryValid){
+    holder.innerHTML='<p class="empty">初当たり履歴または有効なチェリーBカウントを入力すると、設定推測を表示します。</p>';
+    return;
+  }
+  const rows=SETTING_NUMBERS.map((setting,i)=>{
+    let logL=0;
+    if(hasHitData){const rate=1/data.initial[i];logL+=hitCount*Math.log(rate)-totalG*rate;}
+    if(cherryValid){const p=1/data.cherryB[i];logL+=cherryCount*Math.log(p)+(cherryGames-cherryCount)*Math.log(1-p);}
+    return {setting,logL};
+  });
+  const maxLog=Math.max(...rows.map(r=>r.logL));
+  const weights=rows.map(r=>Math.exp(r.logL-maxLog));
+  const sumWeights=weights.reduce((a,b)=>a+b,0)||1;
+  rows.forEach((r,i)=>r.posterior=weights[i]/sumWeights*100);
+  rows.sort((a,b)=>b.posterior-a.posterior);
+  const best=rows[0];
+  const invalidCherry=cherryGames>0&&cherryCount>cherryGames;
+  const modeText=hasHitData&&cherryValid?'初当たり＋チェリーB':hasHitData?'初当たり確率のみ':'チェリーBのみ';
+  let html=`<div class="setting-result"><div class="small">対象：沖ドキ！${config.name} ／ 判別材料：${modeText}</div><p style="font-size:1.05rem;margin-top:5px"><strong>推定設定：${best.setting}</strong>（相対推定 ${best.posterior.toFixed(1)}%）</p><p class="setting-note">初当たり集計：${hitCount}回（BIG ${bigCount}回・REG ${regCount}回）／初当たりG合計 ${fmt(totalG)}G</p></div>`;
+  html+=`<div class="reggrid"><div class="regbox"><strong>初当たりBIG確率（実績）</strong>${bigRate!==null?'1/'+bigRate.toFixed(1):'—'}<p class="setting-note">BIG初当たり ${bigCount}回</p></div><div class="regbox"><strong>初当たりREG確率（実績）</strong>${regRate!==null?'1/'+regRate.toFixed(1):'—'}<p class="setting-note">REG初当たり ${regCount}回</p></div></div>`;
+  if(cherryGames>0){
+    if(invalidCherry) html+='<p class="setting-note bad" style="margin-top:8px">入力エラー：チェリーB回数がカウント対象ゲーム数を超えています。チェリーBは推定に使用していません。</p>';
+    else html+=`<p class="setting-note" style="margin-top:8px">チェリーB実績：${cherryCount}/${cherryGames.toLocaleString('ja-JP')}G（1/${(cherryGames/(cherryCount||Infinity)).toFixed(1)}）</p>`;
+  }
+  html+='<p class="setting-note" style="margin:10px 0 5px">設定ごとの相対推定</p>';
+  rows.sort((a,b)=>a.setting-b.setting).forEach(r=>{
+    html+=`<div class="setting-row"><strong>設定${r.setting}</strong><div class="bartrack"><div class="barfill" style="width:${r.posterior.toFixed(3)}%"></div></div><span style="text-align:right">${r.posterior.toFixed(1)}%</span></div>`;
+  });
+  html+='<p class="setting-note">※表示％は入力した材料と今回の設定候補内で計算した相対値で、実際の設定が当たる確率を保証するものではありません。</p>';
+  holder.innerHTML=html;
+}
+
+function getCutMarks(sections){
+  const marks=new Map();
+  sections.forEach(sec=>{
+    let games=0,diff=0;
+    sec.items.forEach(item=>{
+      const prevGames=games,prevDiff=diff;
+      games=item.calcSectionTotal;
+      diff+=itemDiff(item);
+      const key=item.modelKey||'unknown';
+      let thresholds=[];
+      if(key==='gold') thresholds=[1600,2000];
+      else if(key==='black') thresholds=[2000,2600,3000,3600,4000];
+      else if(key==='gorgeous') thresholds=[2600,3000,3600,4000];
+      const itemMarks=[];
+      thresholds.forEach(t=>{
+        if(prevGames<t&&games>=t){
+          itemMarks.push({kind:'game',title:`${key.toUpperCase()}：${t.toLocaleString('ja-JP')}G付近の有利区間切断候補`});
+        }
+      });
+      if(prevDiff<2098&&diff>=2098){
+        itemMarks.push({kind:'diff',title:`区間推定差枚が＋2,098枚に到達。＋2,098〜＋2,250枚帯の差枚数切断候補（現在 ${fmt(diff)}枚）`});
+      }
+      if(itemMarks.length) marks.set(item.id,itemMarks);
+    });
+  });
+  return marks;
+}
+
+function updateRegMeters(sections){
+  const current=sections.length?sections[sections.length-1]:{g:0,items:[]};
+  const currentGames=current.items.length?current.items[current.items.length-1].calcSectionTotal:0;
+  [[4000,'4000'],[6000,'6000']].forEach(([limit,id])=>{
+    const pct=Math.min(100,currentGames/limit*100);
+    document.getElementById('interval-bar-'+id).style.width=pct+'%';
+    const bar=document.getElementById('interval-bar-'+id);
+    bar.style.background=pct>=100?'#ff453a':pct>=80?'#ffca66':'#0a84ff';
+    document.getElementById('interval-text-'+id).textContent=`現在の手動区間：${fmt(currentGames)} / ${limit.toLocaleString()}G（${pct.toFixed(1)}%）`;
+  });
+}
+
+function renderCharts(overallData,sections,overallGames){
+  if(!overallData){
+    let diff=0;overallData=[0];overallGames=[0];
+    sections=buildSections();
+    sections.forEach(sec=>{
+      sec.items.forEach(item=>{
+        diff+=itemDiff(item);
+        overallData.push(diff);
+        overallGames.push(item.calcSectionTotal);
+      });
+    });
+  }
+  drawChart(document.getElementById('overall-chart'),overallData,overallGames||[0],'全体');
+  const holder=document.getElementById('interval-charts');
+  if(!sections||!sections.length){holder.innerHTML='<p class="empty">履歴を入力すると区間別グラフが表示されます。</p>';return;}
+  holder.innerHTML='';
+  sections.forEach(sec=>{
+    const card=document.createElement('div');card.className='card';card.style.margin='0 0 10px';card.style.padding='9px';
+    const modelNames=[...sec.modelKeys].map(k=>MODEL_CONFIG[k]?.name||k).join('・');
+    const canvas=document.createElement('canvas');canvas.style.height='160px';
+    const title=document.createElement('div');title.className='chart-title';
+    const lastSecGame=sec.items.length?sec.items[sec.items.length-1].calcSectionTotal:0;
+    title.textContent=`区間 ${sec.index}｜${modelNames}｜区間総G（目安） ${fmt(lastSecGame)}G`;
+    const stats=document.createElement('p');stats.className='small';
+    stats.textContent=`区間内の推定差枚：${sec.diff>0?'+':''}${fmt(sec.diff)}枚 ／ ボーナス回数：${sec.items.length}`;
+    card.append(title,canvas,stats);holder.appendChild(card);
+    drawChart(canvas,sec.data,sec.games,`区間${sec.index}`);
+  });
+}
+
+function drawChart(canvas,data,gamePoints,label){
+  const width=Math.max(280,canvas.clientWidth||320),height=canvas.clientHeight||180,dpr=window.devicePixelRatio||1;
+  canvas.width=width*dpr;canvas.height=height*dpr;
+  const ctx=canvas.getContext('2d');ctx.scale(dpr,dpr);ctx.clearRect(0,0,width,height);
+  if(data.length<=1){ctx.fillStyle='#666';ctx.font='12px sans-serif';ctx.textAlign='center';ctx.fillText('履歴を入力するとグラフが表示されます',width/2,height/2);return;}
+  const rawMin=Math.min(0,...data),rawMax=Math.max(0,...data);
+  let min=Math.floor((rawMin-250)/500)*500,max=Math.ceil((rawMax+250)/500)*500;if(min===max){min-=500;max+=500;}
+  const left=48,right=12,top=15,bottom=30,gw=width-left-right,gh=height-top-bottom,range=max-min;
+  const maxGame=Math.max(500,...gamePoints),xMax=Math.ceil(maxGame/500)*500;
+  const xAt=g=>left+(g/xMax)*gw;
+  ctx.font='10px sans-serif';ctx.textAlign='right';
+  for(let v=min;v<=max;v+=500){
+    const y=height-bottom-(v-min)/range*gh;ctx.beginPath();ctx.strokeStyle=v===0?'#888':'#333';ctx.setLineDash(v===0?[]:[3,3]);ctx.lineWidth=v===0?1.5:1;ctx.moveTo(left,y);ctx.lineTo(width-right,y);ctx.stroke();
+    ctx.fillStyle=v>0?'#ff7b72':v<0?'#75bfff':'#aaa';ctx.fillText(v>0?'+'+v:v,left-5,y+3);
+  }
+  ctx.setLineDash([]);
+  for(let g=0;g<=xMax;g+=500){
+    const x=xAt(g);ctx.beginPath();ctx.strokeStyle='#303030';ctx.lineWidth=1;ctx.moveTo(x,top);ctx.lineTo(x,height-bottom);ctx.stroke();
+    const labelEvery=xMax>4000?1000:500;
+    if(g%labelEvery===0){ctx.fillStyle='#aaa';ctx.font='9px sans-serif';ctx.textAlign='center';ctx.fillText(g===0?'0':g.toLocaleString('ja-JP'),x,height-16);}
+  }
+  ctx.fillStyle='#aaa';ctx.font='9px sans-serif';ctx.textAlign='right';ctx.fillText('G',width-right,height-3);
+  ctx.strokeStyle='#0a84ff';ctx.lineWidth=2.2;ctx.beginPath();
+  data.forEach((v,i)=>{const x=xAt(Number(gamePoints[i])||0),y=height-bottom-(v-min)/range*gh;if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);});ctx.stroke();
+  data.forEach((v,i)=>{const x=xAt(Number(gamePoints[i])||0),y=height-bottom-(v-min)/range*gh;ctx.beginPath();ctx.fillStyle=v>=0?'#ff453a':'#0a84ff';ctx.arc(x,y,3,0,Math.PI*2);ctx.fill();});
+}
+
+function renderCutAnalysis(sections){
+  const holder=document.getElementById('cut-analysis');
+  const findings=[];
+  sections.forEach(sec=>{
+    sec.items.forEach(item=>{
+      const games=item.calcSectionTotal;
+      const prevGames=games-(Number(item.initialG)||0)-(Number(item.addG)||0);
+      const diff=sec.data[sec.items.indexOf(item)+1]||0;
+      const key=item.modelKey||'unknown';
+      let thresholds=[];
+      if(key==='gold'){
+        if((prevGames<1600&&games>=1600)||(prevGames<2000&&games>=2000)) thresholds.push('GOLD：1,600〜2,000G帯');
+      }else if(key==='black'){
+        [2000,2600,3000,3600,4000].forEach(t=>{if(prevGames<t&&games>=t)thresholds.push(`BLACK：${t.toLocaleString('ja-JP')}G付近`);});
+      }else if(key==='gorgeous'){
+        [2600,3000,3600,4000].forEach(t=>{if(prevGames<t&&games>=t)thresholds.push(`GORGEOUS：${t.toLocaleString('ja-JP')}G付近`);});
+      }
+      thresholds.push(...[]);
+      thresholds.forEach(t=>findings.push({section:sec.index,game:games,diff,kind:'game',label:t,bonus:item.bonusType}));
+    });
+  });
+  if(!histories.some(isBonus)){holder.innerHTML='<p class="empty">履歴を入力すると参考判定を表示します。</p>';return;}
+  if(!findings.length){holder.innerHTML='<p class="small">現在の履歴では、設定したゲーム数・差枚数の切断候補を検出していません。候補に達していないことは、切断が起きていない証明にはなりません。</p>';return;}
+  holder.innerHTML='';
+  findings.forEach(f=>{
+    const row=document.createElement('div');row.className='regbox';row.style.marginBottom='7px';
+    const strong=document.createElement('strong');strong.textContent=f.kind==='diff'?'差枚数切断の可能性が高い':'有利区間切断候補';
+    const detail=document.createElement('p');detail.className='small';detail.textContent=`区間${f.section}・${f.label}／区間目安 ${fmt(f.game)}G／推定差枚 ${f.diff>0?'+':''}${fmt(f.diff)}枚（${f.bonus}後）`;
+    row.append(strong,detail);holder.appendChild(row);
+  });
+}
+
+function escapeHtml(str){return String(str).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+
+let importSite='king';
+let importedRows=[];
+let importDiagnostics=[];
+let importTextHasErrors=false;
+let ocrWorkerPromise=null;
+function selectImportSite(site){
+  importSite=site;
+  document.getElementById('site-king').classList.toggle('selected',site==='king');
+  document.getElementById('site-wing').classList.toggle('selected',site==='wing');
+  document.getElementById('import-rule').textContent=site==='king'
+    ?'キング：下から上へ読み取り。回数・ゲーム数・BIG/REGを確認し、時間は読み取り結果から除外します。'
+    :'ウイング：表の行・列を検出し、スタートG列とBB/RB列だけを個別に読み取ります。回数は上から自動設定し、時刻・出玉は無視します。';
+}
+function setImportStatus(message){document.getElementById('import-status').textContent=message;}
+function setImportProgress(value){document.getElementById('import-progress-wrap').hidden=false;document.getElementById('import-progress-bar').style.width=Math.max(0,Math.min(100,value))+'%';}
+function showImportDiagnostics(items){
+  const box=document.getElementById('import-diagnostics');box.innerHTML='';
+  if(!items.length){box.hidden=true;return;}
+  box.hidden=false;
+  items.forEach(item=>{const div=document.createElement('div');div.className=item.level==='error'?'import-error':item.level==='warning'?'import-warning':'import-status';div.textContent=item.message;box.appendChild(div);});
+}
+async function getOcrWorker(){
+  if(ocrWorkerPromise)return ocrWorkerPromise;
+  ocrWorkerPromise=(async()=>{
+    if(!window.Tesseract){
+      await new Promise((resolve,reject)=>{const script=document.createElement('script');script.src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';script.onload=resolve;script.onerror=()=>reject(new Error('OCRエンジンを読み込めません。インターネット接続またはCDNへの接続を確認してください。'));document.head.appendChild(script);});
+    }
+    const worker=await Tesseract.createWorker('eng',1,{logger:m=>{if(m.status==='recognizing text')setImportProgress(m.progress*100);}});
+    await worker.setParameters({tessedit_pageseg_mode:'11',preserve_interword_spaces:'1',user_defined_dpi:'300'});
+    return worker;
+  })().catch(e=>{ocrWorkerPromise=null;throw e;});
+  return ocrWorkerPromise;
+}
+async function makeOcrImage(file){
+  let bitmap;
+  if('createImageBitmap' in window){try{bitmap=await createImageBitmap(file);}catch(e){}}
+  if(!bitmap){
+    const url=URL.createObjectURL(file);
+    try{bitmap=await new Promise((resolve,reject)=>{const img=new Image();img.onload=()=>resolve(img);img.onerror=()=>reject(new Error('画像を開けません。PNG/JPEGで保存し直してお試しください。'));img.src=url;});}
+    finally{URL.revokeObjectURL(url);}
+  }
+  const w=bitmap.width,h=bitmap.height;
+  if(!w||!h)throw new Error('画像サイズを取得できませんでした。');
+  const scale=Math.min(2.2,Math.max(1,1800/Math.max(w,h)));
+  const canvas=document.createElement('canvas');canvas.width=Math.round(w*scale);canvas.height=Math.round(h*scale);
+  const ctx=canvas.getContext('2d',{willReadFrequently:true});ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.drawImage(bitmap,0,0,canvas.width,canvas.height);
+  if(bitmap.close)bitmap.close();
+  return canvas;
+}
+function normalizeOcrWord(value){return String(value||'').trim().toUpperCase().replace(/[|｜]/g,'I').replace(/[^A-Z0-9:]/g,'');}
+function wordType(value){const t=normalizeOcrWord(value);if(/^(BIG|BB|B1G|B!G)$/.test(t)||/^B[I1]G$/.test(t))return 'BIG';if(/^(REG|RB|RBG|R3G)$/.test(t)||/^R[E3]G$/.test(t))return 'REG';return null;}
+function tsvWords(tsv){
+  const lines=tsv.split(/\r?\n/),out=[];
+  for(let i=1;i<lines.length;i++){const c=lines[i].split('\t');if(c.length<12||Number(c[0])!==5)continue;const text=(c[11]||'').trim();if(!text)continue;const left=Number(c[6]),top=Number(c[7]),width=Number(c[8]),height=Number(c[9]),conf=Number(c[10]);if(![left,top,width,height].every(Number.isFinite))continue;out.push({text,left,top,width,height,cx:left+width/2,cy:top+height/2,conf:Number.isFinite(conf)?conf:0});}
+  return out;
+}
+function clusterWordsIntoRows(words){
+  if(!words.length)return [];
+  const sorted=[...words].sort((a,b)=>a.cy-b.cy),heights=sorted.map(w=>w.height).filter(n=>n>0).sort((a,b)=>a-b),med=heights[Math.floor(heights.length/2)]||18,tolerance=Math.max(9,med*.78),rows=[];
+  sorted.forEach(w=>{let row=rows.find(r=>Math.abs(r.cy-w.cy)<=tolerance);if(!row){row={cy:w.cy,words:[]};rows.push(row);}row.words.push(w);row.cy=row.words.reduce((n,x)=>n+x.cy,0)/row.words.length;});
+  rows.forEach(r=>r.words.sort((a,b)=>a.cx-b.cx));
+  return rows.sort((a,b)=>a.cy-b.cy);
+}
+function numericToken(word){
+  let t=normalizeOcrWord(word.text).replace(/[OQD]/g,'0').replace(/[Il|]/g,'1').replace(/[S]/g,'5');
+  if(/^\d{1,4}$/.test(t))return Number(t);
+  return null;
+}
+function parseOcrRows(tsv,site,imageIndex){
+  const words=tsvWords(tsv),groups=clusterWordsIntoRows(words),rows=[],diagnostics=[];
+  groups.forEach((group,idx)=>{
+    const typeWords=group.words.map(w=>({word:w,type:wordType(w.text)})).filter(x=>x.type);
+    const nums=group.words.map(w=>({word:w,value:numericToken(w)})).filter(x=>x.value!==null&&x.value>=0&&x.value<=9999);
+    if(!typeWords.length)return;
+    const type=typeWords.length?typeWords[typeWords.length-1].type:null;
+    const orderedNums=nums.sort((a,b)=>a.word.cx-b.word.cx);
+    const typeWord=typeWords.length?typeWords[typeWords.length-1].word:null;
+    const gameCandidates=orderedNums.filter(x=>!typeWord||x.word.cx<typeWord.cx);
+    const gameEntry=gameCandidates.length?gameCandidates[gameCandidates.length-1]:null;
+    const game=gameEntry?gameEntry.value:null;
+    let count=null;
+    const problems=[];
+    if(game===null)problems.push(site==='wing'?'スタートG':'ゲーム数');
+    if(!type)problems.push('種別');
+    if(site==='king')count=-1;
+    const confidence=[...(gameEntry?[gameEntry.word.conf]:[]),...(typeWords.length?[typeWords[0].word.conf]:[])];
+    const lowConfidence=confidence.some(c=>c>=0&&c<20);
+    rows.push({game,type,count,y:group.cy,imageIndex,raw:group.words.map(w=>w.text).join(' '),problems,lowConfidence});
+  });
+  rows.sort((a,b)=>site==='king'?b.y-a.y:a.y-b.y);
+  rows.forEach((r,i)=>{
+    if(r.count===-1){r.count=i+1;}
+    if(site==='wing')r.count=i+1;
+    if(r.problems.length)diagnostics.push({level:'error',message:`画像${imageIndex+1}・${i+1}行目${r.count!==null?`（回数 ${r.count}）`:''}：${r.problems.join('・')}が読み取れませんでした。認識文字：「${r.raw}」`});
+    else if(r.lowConfidence)diagnostics.push({level:'warning',message:`画像${imageIndex+1}・${i+1}行目（回数 ${r.count}）：認識精度が低いため、ゲーム数・種別を確認してください。`});
+  });
+  return {rows,diagnostics,wordCount:words.length};
+}
+function isKingGridRed(r,g,b){return r>80&&r>g*1.15&&r>b*1.15;}
+function clusterLinePositions(values){
+  if(!values.length)return [];
+  const groups=[];let current=[values[0]];
+  for(let i=1;i<values.length;i++){
+    if(values[i]<=current[current.length-1]+2)current.push(values[i]);
+    else{groups.push(current);current=[values[i]];}
+  }
+  groups.push(current);
+  return groups.map(a=>Math.round(a.reduce((x,y)=>x+y,0)/a.length));
+}
+function detectKingTableGrid(canvas){
+  const ctx=canvas.getContext('2d',{willReadFrequently:true}),w=canvas.width,h=canvas.height;
+  const data=ctx.getImageData(0,0,w,h).data;
+  const horizontal=[],vertical=[];
+  for(let y=0;y<h;y++){
+    let n=0;for(let x=0;x<w;x++){const k=(y*w+x)*4;if(isKingGridRed(data[k],data[k+1],data[k+2]))n++;}
+    if(n>=w*.58)horizontal.push(y);
+  }
+  const ys=clusterLinePositions(horizontal);
+  if(ys.length<3)throw new Error('キングの赤い横罫線を十分に検出できませんでした。表全体が写るように撮影してください。');
+  const top=ys[0],bottom=ys[ys.length-1],tableH=bottom-top;
+  for(let x=0;x<w;x++){
+    let n=0;for(let y=top;y<=bottom;y++){const k=(y*w+x)*4;if(isKingGridRed(data[k],data[k+1],data[k+2]))n++;}
+    if(n>=tableH*.52)vertical.push(x);
+  }
+  const xs=clusterLinePositions(vertical);
+  if(xs.length<5)throw new Error('キングの縦罫線を検出できませんでした。表の左右が切れていない画像を使用してください。');
+  const left=xs[0],right=xs[xs.length-1];
+  const expected=[left,(left+right)*.25,(left+right)*.50,(left+right)*.75,right];
+  const chosen=expected.map((target,i)=>xs.reduce((best,x)=>Math.abs(x-target)<Math.abs(best-target)?x:best,xs[0]));
+  const unique=[...new Set(chosen)].sort((a,b)=>a-b);
+  if(unique.length!==5)throw new Error('キングの列境界を特定できませんでした。');
+  const rowPairs=[];
+  for(let i=0;i<ys.length-1;i++){
+    const rh=ys[i+1]-ys[i];
+    if(rh>tableH/Math.max(ys.length-1,1)*.55&&rh<tableH/Math.max(ys.length-1,1)*1.55)rowPairs.push([ys[i],ys[i+1]]);
+  }
+  if(!rowPairs.length)throw new Error('キングの履歴行を検出できませんでした。');
+  return {xs:unique,rows:rowPairs,width:w,height:h};
+}
+function cropKingCell(source,x1,y1,x2,y2,scale=3){
+  const padX=Math.max(3,Math.round((x2-x1)*.06)),padY=Math.max(3,Math.round((y2-y1)*.10));
+  const sx=Math.max(0,Math.round(x1+padX)),sy=Math.max(0,Math.round(y1+padY));
+  const sw=Math.max(1,Math.round(x2-x1-2*padX)),sh=Math.max(1,Math.round(y2-y1-2*padY));
+  const c=document.createElement('canvas');c.width=Math.round(sw*scale);c.height=Math.round(sh*scale);
+  const cx=c.getContext('2d',{willReadFrequently:true});cx.fillStyle='#fff';cx.fillRect(0,0,c.width,c.height);cx.imageSmoothingEnabled=true;cx.imageSmoothingQuality='high';cx.drawImage(source,sx,sy,sw,sh,0,0,c.width,c.height);
+  const im=cx.getImageData(0,0,c.width,c.height),d=im.data;
+  for(let i=0;i<d.length;i+=4){const gray=.299*d[i]+.587*d[i+1]+.114*d[i+2];const v=gray<175?0:255;d[i]=d[i+1]=d[i+2]=v;d[i+3]=255;}
+  cx.putImageData(im,0,0);
+  const pixels=cx.getImageData(0,0,c.width,c.height).data;let minX=c.width,minY=c.height,maxX=-1,maxY=-1;
+  for(let y=0;y<c.height;y++)for(let x=0;x<c.width;x++){const k=(y*c.width+x)*4;if(pixels[k]<200){if(x<minX)minX=x;if(x>maxX)maxX=x;if(y<minY)minY=y;if(y>maxY)maxY=y;}}
+  if(maxX>=minX&&maxY>=minY){const pad=Math.max(5,Math.round(c.height*.035)),x1=Math.max(0,minX-pad),y1=Math.max(0,minY-pad),x2=Math.min(c.width,maxX+pad+1),y2=Math.min(c.height,maxY+pad+1);const tight=document.createElement('canvas');tight.width=x2-x1;tight.height=y2-y1;tight.getContext('2d').drawImage(c,x1,y1,tight.width,tight.height,0,0,tight.width,tight.height);return tight;}
+  return c;
+}
+async function recognizeKingCell(worker,canvas,kind){
+  if(kind==='game')await worker.setParameters({tessedit_pageseg_mode:'8',tessedit_char_whitelist:'0123456789'});
+  else await worker.setParameters({tessedit_pageseg_mode:'8',tessedit_char_whitelist:'BIGREG'});
+  const result=await worker.recognize(canvas),raw=String(result.data.text||'').trim().toUpperCase();
+  const confidence=Number(result.data.confidence)||0;
+  if(kind==='game'){
+    const digits=raw.replace(/[^0-9]/g,'');
+    if(!digits)return {value:null,raw,confidence};
+    const value=Number(digits);return {value:Number.isInteger(value)&&value<=9999?value:null,raw,confidence};
+  }
+  const compact=raw.replace(/[^A-Z]/g,'');
+  let value=null;if(/BIG|B1G/.test(compact))value='BIG';else if(/REG|R3G/.test(compact))value='REG';
+  return {value,raw,confidence};
+}
+async function recognizeKingGrid(canvas,worker,imageIndex){
+  const grid=detectKingTableGrid(canvas),rows=[],diagnostics=[];
+  const ordered=[...grid.rows].reverse();
+  for(let i=0;i<ordered.length;i++){
+    const [y1,y2]=ordered[i],count=i+1;
+    const gameCanvas=cropKingCell(canvas,grid.xs[2],y1,grid.xs[3],y2,3.5);
+    const typeCanvas=cropKingCell(canvas,grid.xs[3],y1,grid.xs[4],y2,3.5);
+    const gameResult=await recognizeKingCell(worker,gameCanvas,'game');
+    const typeResult=await recognizeKingCell(worker,typeCanvas,'type');
+    const problems=[];if(gameResult.value===null)problems.push('ゲーム数');if(typeResult.value===null)problems.push('種別');
+    const raw=`ゲーム数[${gameResult.raw||'認識なし'}] 種別[${typeResult.raw||'認識なし'}]`;
+    rows.push({game:gameResult.value,type:typeResult.value,count,y:y2,imageIndex,raw,problems,lowConfidence:gameResult.confidence<20||typeResult.confidence<20});
+    if(problems.length)diagnostics.push({level:'error',message:`画像${imageIndex+1}・${count}回目：${problems.join('・')}が読み取れませんでした。${raw}`});
+  }
+  return {rows,diagnostics,wordCount:rows.length*2};
+}
+
+function detectWingTableGrid(canvas,allowHeaderless=false){
+  const ctx=canvas.getContext('2d',{willReadFrequently:true}),w=canvas.width,h=canvas.height;
+  const data=ctx.getImageData(0,0,w,h).data;
+  const blueCounts=new Array(h).fill(0);
+  for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+    const k=(y*w+x)*4,r=data[k],g=data[k+1],b=data[k+2];
+    if(b>75&&b>r*1.35&&b>g*1.15)blueCounts[y]++;
+  }
+  const peak=Math.max(...blueCounts),threshold=Math.max(40,peak*.35);
+  let headerRows=[];for(let y=0;y<h;y++)if(blueCounts[y]>=threshold)headerRows.push(y);
+  const hasHeader=headerRows.length>0&&peak>=Math.min(100,w*.25);
+  let left,right,headerBottom,tableWidth,xBounds,scanStart;
+  if(hasHeader){
+    const minY=headerRows[0],maxY=headerRows[headerRows.length-1];
+    let minX=w,maxX=-1;
+    for(let y=minY;y<=maxY;y++)for(let x=0;x<w;x++){
+      const k=(y*w+x)*4,r=data[k],g=data[k+1],b=data[k+2];
+      if(b>75&&b>r*1.35&&b>g*1.15){if(x<minX)minX=x;if(x>maxX)maxX=x;}
+    }
+    if(maxX<=minX||maxY<=minY)throw new Error('ウイングの青い見出し行を検出できませんでした。');
+    left=minX;right=maxX+1;headerBottom=maxY+1;tableWidth=right-left;scanStart=headerBottom+3;
+  }else{
+    if(!allowHeaderless)throw new Error('ウイングの青い見出し行を検出できませんでした。');
+    left=0;right=w;tableWidth=w;headerBottom=0;scanStart=1;
+  }
+  xBounds=[left,left+tableWidth*.16,left+tableWidth*.34,left+tableWidth*.58,left+tableWidth*.80,right];
+  const sampleX=Math.min(w-1,left+7),transitions=[];
+  const lumAt=y=>{const k=(y*w+sampleX)*4;return (data[k]*.299+data[k+1]*.587+data[k+2]*.114);};
+  let prev=lumAt(Math.min(h-1,hasHeader?headerBottom+2:0))>18;
+  
+  for(let y=scanStart;y<h;y++){
+    const k=(y*w+Math.round(w/2))*4;
+    if(data[k]>120 && data[k+1]>120 && data[k+2]>120 && y > h * 0.90) break;
+    const cur=lumAt(y)>18;
+    if(cur!==prev){transitions.push(y);prev=cur;}
+  }
+  
+  const boundaries=hasHeader?[headerBottom,...transitions]:[0,...transitions,h];
+  const heights=[];for(let i=1;i<boundaries.length;i++){const d=boundaries[i]-boundaries[i-1];if(d>=Math.max(12,canvas.width*.025)&&d<=canvas.width*.15)heights.push(d);}
+  if(heights.length<2)throw new Error('ウイングの履歴行を検出できませんでした。');
+  const sorted=[...heights].sort((a,b)=>a-b),median=sorted[Math.floor(sorted.length/2)];
+  const rows=[];
+  for(let i=1;i<boundaries.length;i++){
+    const y1=boundaries[i-1],y2=boundaries[i],rh=y2-y1;
+    if(rh>=median*.65&&rh<=median*1.4)rows.push([y1,y2]);
+  }
+  if(!rows.length)throw new Error('ウイングの履歴行を区切れませんでした。');
+  return {xBounds,rows,left,right,headerBottom,median};
+}
+
+function findWingContinuationRange(canvas,referenceGrid){
+  const ctx=canvas.getContext('2d',{willReadFrequently:true}),w=canvas.width,h=canvas.height;
+  const data=ctx.getImageData(0,0,w,h).data;
+  const sampleX=Math.max(0,Math.min(w-1,Math.round(referenceGrid.left+7)));
+  const lumAt=y=>{const k=(y*w+sampleX)*4;return data[k]*.299+data[k+1]*.587+data[k+2]*.114;};
+  const transitions=[];let prev=lumAt(0)>18;
+  for(let y=1;y<h;y++){
+    const k=(y*w+Math.round(w/2))*4;
+    if(data[k]>120 && data[k+1]>120 && data[k+2]>120 && y > h * 0.90) break;
+    const cur=lumAt(y)>18;if(cur!==prev){transitions.push(y);prev=cur;}
+  }
+  const median=referenceGrid.median,low=median*.65,high=median*1.4;
+  for(let i=0;i<transitions.length-3;i++){
+    let good=0,j=i;
+    while(j<transitions.length-1){const d=transitions[j+1]-transitions[j];if(d<low||d>high)break;good++;j++;}
+    if(good>=3){
+      const start=Math.max(0,Math.round(transitions[i]-median));
+      const end=transitions[j];
+      if(end-start>=median*3)return {start,end};
+    }
+  }
+  throw new Error('2枚目の履歴行を検出できませんでした。');
+}
+
+function stitchWingCanvases(canvases){
+  if(canvases.length===1)return canvases[0];
+  const first=canvases[0],grid=detectWingTableGrid(first,false);
+  const lastRowEnd=grid.rows[grid.rows.length-1][1];
+  const parts=[{canvas:first,sx:0,sy:0,sw:first.width,sh:lastRowEnd}];
+  for(let i=1;i<canvases.length;i++){
+    const src=canvases[i],range=findWingContinuationRange(src,grid);
+    parts.push({canvas:src,sx:0,sy:range.start,sw:src.width,sh:range.end-range.start});
+  }
+  const width=first.width,scale=width/first.width;
+  const totalHeight=parts.reduce((sum,p)=>sum+Math.round(p.sh*scale),0)+parts.length-1;
+  const merged=document.createElement('canvas');merged.width=width;merged.height=totalHeight;
+  const ctx=merged.getContext('2d');let y=0;
+  parts.forEach((part,index)=>{
+    const dh=Math.round(part.sh*scale);
+    ctx.drawImage(part.canvas,part.sx,part.sy,part.sw,part.sh,0,y,width,dh);
+    y+=dh;
+    if(index<parts.length-1){ctx.fillStyle='#ffffff';ctx.fillRect(0,y,width,1);y+=1;}
+  });
+  return merged;
+}
+
+function cropWingCell(source,x1,y1,x2,y2,kind,scale=4){
+  const padX=Math.max(2,Math.round((x2-x1)*.10)),padY=Math.max(2,Math.round((y2-y1)*.12));
+  const sx=Math.max(0,Math.round(x1+padX)),sy=Math.max(0,Math.round(y1+padY));
+  const sw=Math.max(1,Math.round(x2-x1-2*padX)),sh=Math.max(1,Math.round(y2-y1-2*padY));
+  const c=document.createElement('canvas');c.width=Math.round(sw*scale);c.height=Math.round(sh*scale);
+  const cx=c.getContext('2d',{willReadFrequently:true});cx.drawImage(source,sx,sy,sw,sh,0,0,c.width,c.height);
+  const im=cx.getImageData(0,0,c.width,c.height),d=im.data;
+  if(kind==='type'){
+    let bx=c.width,by=c.height,ex=-1,ey=-1;
+    const badgeMask=new Uint8Array(c.width*c.height);
+    for(let y=0;y<c.height;y++)for(let x=0;x<c.width;x++){
+      const i=(y*c.width+x)*4,r=d[i],g=d[i+1],b=d[i+2];
+      const orange=r>135&&g<155&&b<115&&r>g*1.25;
+      const cyan=g>135&&b>135&&g>r*1.35&&b>r*1.35;
+      if(orange||cyan){badgeMask[y*c.width+x]=1;if(x<bx)bx=x;if(x>ex)ex=x;if(y<by)by=y;if(y>ey)ey=y;}
+    }
+    if(ex>=bx&&ey>=by){
+      const pad=Math.max(5,Math.round(c.height*.04)),x0=Math.max(0,bx-pad),y0=Math.max(0,by-pad),x1=Math.min(c.width,ex+pad+1),y1=Math.min(c.height,ey+pad+1);
+      const out=document.createElement('canvas');out.width=x1-x0;out.height=y1-y0;
+      const ox=out.getContext('2d',{willReadFrequently:true}),oi=ox.createImageData(out.width,out.height),od=oi.data;
+      for(let y=y0;y<y1;y++)for(let x=x0;x<x1;x++){
+        const src=(y*c.width+x)*4,dst=((y-y0)*out.width+(x-x0))*4;
+        const v=badgeMask[y*c.width+x]?255:0;
+        od[dst]=od[dst+1]=od[dst+2]=v;od[dst+3]=255;
+      }
+      ox.putImageData(oi,0,0);
+      return out;
+    }
+    return c;
+  }
+  for(let i=0;i<d.length;i+=4){
+    const gray=.299*d[i]+.587*d[i+1]+.114*d[i+2];
+    const v=gray>175?0:255;
+    d[i]=d[i+1]=d[i+2]=v;d[i+3]=255;
+  }
+  cx.putImageData(im,0,0);
+  const px=cx.getImageData(0,0,c.width,c.height).data;let bx=c.width,by=c.height,ex=-1,ey=-1;
+  for(let y=0;y<c.height;y++)for(let x=0;x<c.width;x++){const k=(y*c.width+x)*4;if(px[k]<100){if(x<bx)bx=x;if(x>ex)ex=x;if(y<by)by=y;if(y>ey)ey=y;}}
+  if(ex>=bx&&ey>=by){const pad=Math.max(5,Math.round(c.height*.05)),x=Math.max(0,bx-pad),y=Math.max(0,by-pad),xx=Math.min(c.width,ex+pad+1),yy=Math.min(c.height,ey+pad+1),out=document.createElement('canvas');out.width=xx-x;out.height=yy-y;out.getContext('2d').drawImage(c,x,y,out.width,out.height,0,0,out.width,out.height);return out;}
+  return c;
+}
+
+async function recognizeWingGame(worker,cell){
+  await worker.setParameters({tessedit_pageseg_mode:'8',tessedit_char_whitelist:'0123456789'});
+  const result=await worker.recognize(cell),raw=String(result.data.text||'').trim();
+  const digits=raw.replace(/[^0-9]/g,'');
+  const value=digits?Number(digits):null;
+  return {value:Number.isInteger(value)&&value>=0&&value<=9999?value:null,raw,confidence:Number(result.data.confidence)||0};
+}
+
+async function recognizeWingType(worker,cell){
+  await worker.setParameters({tessedit_pageseg_mode:'8',tessedit_char_whitelist:'BBRRGE'});
+  const result=await worker.recognize(cell),raw=String(result.data.text||'').trim().toUpperCase();
+  const compact=raw.replace(/[^A-Z]/g,'');
+  let value=null;
+  if(/BB|BR|B/.test(compact)&&!/RG|RB/.test(compact))value='BIG';
+  else if(/RB|RG|R/.test(compact))value='REG';
+  return {value,raw,confidence:Number(result.data.confidence)||0};
+}
+
+async function recognizeWingGrid(canvas,worker,imageIndex,startCount=0){
+  const grid=detectWingTableGrid(canvas,imageIndex>0),rows=[],diagnostics=[];
+  for(let i=0;i<grid.rows.length;i++){
+    const [y1,y2]=grid.rows[i],count=startCount+i+1;
+    const gameCell=cropWingCell(canvas,grid.xBounds[2],y1,grid.xBounds[3],y2,'game',4);
+    const typeCell=cropWingCell(canvas,grid.xBounds[4],y1,grid.xBounds[5],y2,'type',4);
+    const gameResult=await recognizeWingGame(worker,gameCell);
+    const typeResult=await recognizeWingType(worker,typeCell);
+    const problems=[];if(gameResult.value===null)problems.push('スタートG');if(typeResult.value===null)problems.push('種別');
+    const raw=`スタート[${gameResult.raw||'認識なし'}] 種別[${typeResult.raw||'認識なし'}]`;
+    const lowConfidence=gameResult.confidence<20||typeResult.confidence<20;
+    rows.push({game:gameResult.value,type:typeResult.value,count,y:(y1+y2)/2,imageIndex,raw,problems,lowConfidence});
+    if(problems.length)diagnostics.push({level:'error',message:`画像${imageIndex+1}・${count}回目：${problems.join('・')}が読み取れませんでした。${raw}`});
+  }
+  if(rows.length===0)diagnostics.push({level:'error',message:`画像${imageIndex+1}：ウイングの履歴行を検出できませんでした。`});
+  return {rows,diagnostics,wordCount:rows.length*2};
+}
+
+async function recognizeHistoryImages(){
+  const files=[...document.getElementById('history-images').files];
+  if(!files.length){alert('スクリーンショットを選択してください。');return;}
+  const btn=document.getElementById('recognize-button');btn.disabled=true;btn.textContent='読み取り中…';
+  importedRows=[];importDiagnostics=[];document.getElementById('import-preview-wrap').hidden=true;showImportDiagnostics([]);setImportProgress(0);
+  try{
+    setImportStatus('画像を確認し、文字読み取りエンジンを準備しています…');const worker=await getOcrWorker();let totalWords=0;
+    if(importSite==='wing'&&files.length>1){
+      setImportStatus('画像をつなぎ合わせています…');
+      const canvases=[];
+      for(let i=0;i<files.length;i++){
+        try{canvases.push(await makeOcrImage(files[i]));}
+        catch(e){importDiagnostics.push({level:'error',message:`画像${i+1}：${e.message}`});}
+        setImportProgress(((i+1)/files.length)*35);
+      }
+      if(canvases.length===files.length){
+        const stitched=stitchWingCanvases(canvases);
+        setImportStatus('連結した画像を1枚の履歴として解析中…');
+        const parsed=await recognizeWingGrid(stitched,worker,0,0);
+        importedRows.push(...parsed.rows);importDiagnostics.push(...parsed.diagnostics);totalWords+=parsed.wordCount;
+      }
+      setImportProgress(100);
+    }else{
+      for(let i=0;i<files.length;i++){
+        setImportStatus(`${i+1}/${files.length}枚目を解析中…`);
+        let canvas;try{canvas=await makeOcrImage(files[i]);}catch(e){importDiagnostics.push({level:'error',message:`画像${i+1}：${e.message}`});continue;}
+        let parsed;
+        if(importSite==='king')parsed=await recognizeKingGrid(canvas,worker,i);
+        else parsed=await recognizeWingGrid(canvas,worker,i,importedRows.length);
+        importedRows.push(...parsed.rows);importDiagnostics.push(...parsed.diagnostics);totalWords+=parsed.wordCount;setImportProgress(((i+1)/files.length)*100);
+      }
+    }
+    if(importSite==='king')importedRows.sort((a,b)=>a.imageIndex-b.imageIndex||a.count-b.count);else importedRows.sort((a,b)=>a.imageIndex-b.imageIndex||a.y-b.y);
+    const counts=importedRows.map(r=>r.count).filter(n=>n!==null),seen=new Set();
+    counts.forEach(n=>{if(seen.has(n))importDiagnostics.push({level:'error',message:`回数 ${n} が重複して読み取られています。画像の重複や行の誤認識を確認してください。`});seen.add(n);});
+    const errors=importDiagnostics.filter(d=>d.level==='error').length;
+    if(importedRows.length)renderImportPreview();showImportDiagnostics(importDiagnostics);
+    if(!importedRows.length)setImportStatus(`履歴を検出できませんでした。画像の向き・画質・選択サイトを確認してください。`);
+    else if(errors)setImportStatus(`${importedRows.length}行を検出しましたが、${errors}件のエラーがあります。エラーを修正してから履歴に反映してください。`);
+    else setImportStatus(`${importedRows.length}行を検出しました。読み取り結果を確認してください。`);
+  }catch(e){setImportStatus('読み取り処理でエラーが発生しました：'+(e.message||e));showImportDiagnostics([{level:'error',message:e.message||'画像処理を開始できませんでした。'}]);}
+  finally{btn.disabled=false;btn.textContent='画像を読み取る';}
+}
+
+function parseTextHistoryImport(){
+  const input=document.getElementById('history-text-import').value;
+  if(!input.trim()){alert('取り込むテキストを貼り付けてください。');return;}
+  importedRows=[];importDiagnostics=[];importTextHasErrors=false;
+  const lines=input.split(/\r?\n/);
+  const parsed=[];
+  lines.forEach((raw,index)=>{
+    const line=raw.trim();if(!line)return;
+    const normalized=line.toUpperCase().replace(/[：:,.、]/g,' ').replace(/[　\t]+/g,' ').replace(/([0-9])G\b/g,'$1');
+    const typeMatch=normalized.match(/\b(BIG|REG|BB|RB)\b/);
+    const numberMatches=[...normalized.matchAll(/(?:^|\s)(\d{1,4})(?=\s|$)/g)];
+    if(!typeMatch||numberMatches.length!==1){
+      importDiagnostics.push({level:'error',message:`テキスト${index+1}行目を解析できません：「${raw}」。例：584 REG`});return;
+    }
+    const game=Number(numberMatches[0][1]);
+    if(!Number.isInteger(game)||game<0||game>9999){importDiagnostics.push({level:'error',message:`テキスト${index+1}行目のゲーム数が範囲外です：「${raw}」`});return;}
+    const type=/^(BIG|BB)$/.test(typeMatch[1])?'BIG':'REG';
+    parsed.push({game,type,count:parsed.length+1,y:parsed.length,imageIndex:0,raw,problems:[],lowConfidence:false,source:'text'});
+  });
+  importedRows=parsed;importTextHasErrors=importDiagnostics.some(d=>d.level==='error');
+  if(!parsed.length){showImportDiagnostics(importDiagnostics);setImportStatus('取り込める履歴がありません。入力形式を確認してください。');document.getElementById('import-preview-wrap').hidden=true;return;}
+  showImportDiagnostics(importDiagnostics);
+  renderImportPreview();
+  setImportStatus(`${parsed.length}件を解析しました。古い履歴から新しい履歴の順です。内容を確認してから反映してください。${importDiagnostics.length?` 解析エラー：${importDiagnostics.length}件`:''}`);
+}
+
+function renderImportPreview(){
+  const body=document.getElementById('import-preview');body.innerHTML='';
+  importedRows.forEach((r,i)=>{
+    const tr=document.createElement('tr');
+    const gameValue=r.game===null?'':r.game;
+    tr.innerHTML=`<td><input type="checkbox" checked aria-label="${i+1}件目を取り込む"></td><td>${r.count===null?'不明':r.count}</td><td><input class="${r.game===null?'invalid':''}" type="number" min="0" max="9999" value="${gameValue}" placeholder="要確認" aria-label="ゲーム数" onfocus="activeInputId=this.id" id="import-game-${i}"></td><td><select class="${r.type===null?'invalid':''}" aria-label="種別"><option value="">選択</option><option value="BIG" ${r.type==='BIG'?'selected':''}>BIG</option><option value="REG" ${r.type==='REG'?'selected':''}>REG</option></select></td><td>${r.source==='text'?'テキスト':r.imageIndex+1}</td>`;
+    body.appendChild(tr);
+  });
+  document.getElementById('import-count').textContent=`${importedRows.length}件`;
+  document.getElementById('import-preview-wrap').hidden=false;
+}
+
+function applyImportedHistory(mode){
+  if(importTextHasErrors){alert('解析できなかったテキスト行があります。エラーを修正してから、もう一度テキストを解析してください。');return;}
+  if(importDiagnostics.some(d=>d.level==='error'&&d.message.includes('重複'))) {alert('回数の重複があるため反映できません。画像や読み取り結果を確認してください。');return;}
+  const trs=[...document.querySelectorAll('#import-preview tr')];const rows=[];
+  for(let i=0;i<trs.length;i++){
+    const cells=trs[i].querySelectorAll('td');if(!cells[0].querySelector('input').checked)continue;
+    const gameInput=cells[2].querySelector('input'),type=cells[3].querySelector('select');
+    const game=Number(gameInput.value),typeValue=type.value;
+    if(gameInput.value.trim()===''||!Number.isInteger(game)||game<0||game>9999){alert(`${i+1}件目のゲーム数が未入力または不正です。修正してください。`);gameInput.focus();return;}
+    if(!typeValue){alert(`${i+1}件目のBIG／REGが未選択です。修正してください。`);type.focus();return;}
+    rows.push({game,type:typeValue});
+  }
+  if(!rows.length){alert('取り込む履歴がありません。');return;}
+  if(mode==='replace'&&!confirm(`現在の履歴${histories.length}件を削除し、読み込んだ${rows.length}件に置き換えます。よろしいですか？`))return;
+  if(mode==='replace')histories=[];
+  const key=document.getElementById('model-select').value,config=MODEL_CONFIG[key];
+  const big=Number(document.getElementById('big-payout').value),reg=Number(document.getElementById('reg-payout').value);
+  if(!Number.isFinite(big)||big<0||!Number.isFinite(reg)||reg<0){alert('BIG/REG獲得枚数の設定を確認してください。');return;}
+  rows.forEach(r=>histories.push({id:Date.now()+Math.random(),type:'bonus',modelKey:key,modelName:config.name,bonusType:r.type,initialG:r.game,addG:r.type==='BIG'?config.bigAdd:config.regAdd,payout:r.type==='BIG'?big:reg,isInitialHit:r.game>32}));
+  saveLocal();render();setImportStatus(`${rows.length}件の履歴を${mode==='append'?'追加':'置き換え'}ました。`);document.getElementById('import-preview-wrap').hidden=true;
+}
+
+</script>
+<div class="card" id="hibiscus-patterns">
+  <details class="memo-details">
+    <summary aria-controls="hibiscus-patterns-content"><h2>ハイビスカスの光り方一覧表</h2><span class="memo-arrow" aria-hidden="true">▼</span></summary>
+    <div class="memo-content" id="hibiscus-patterns-content">
+      <p class="hibi-note">沖ドキ！GOLDの点灯パターンとモード示唆の参考一覧。示唆は次回モードについての情報です。</p>
+      <div class="hibi-wrap">
+        <table class="hibi-table">
+          <thead><tr><th>点灯パターン</th><th>示唆</th></tr></thead>
+          <tbody>
+            <tr><td>通常点滅</td><td>デフォルト</td></tr>
+            <tr><td>常灯点灯</td><td>デフォルト</td></tr>
+            <tr><td>リール回転時点滅</td><td>デフォルト</td></tr>
+            <tr><td>左右二回点滅</td><td>デフォルト</td></tr>
+            <tr><td>瞬き点滅</td><td>デフォルト</td></tr>
+            <tr><td>だんだん高速点滅</td><td>デフォルト</td></tr>
+            <tr><td>右から点滅</td><td>デフォルト</td></tr>
+            <tr><td>花だけ点滅</td><td>デフォルト</td></tr>
+            <tr><td>葉っぱだけ点滅</td><td>デフォルト</td></tr>
+            <tr><td>ぼんやり点滅</td><td>デフォルト</td></tr>
+            <tr><td>薄光り</td><td>デフォルト</td></tr>
+            <tr><td>ブリッジ点滅</td><td>通常B以上示唆</td></tr>
+            <tr><td>ストリーム点滅</td><td>通常B以上示唆</td></tr>
+            <tr><td>高速点滅</td><td>通常B以上示唆</td></tr>
+            <tr><td>スロー点滅</td><td>通常B以上示唆</td></tr>
+            <tr><td>常灯から点滅</td><td>通常B以上示唆 <span class="hint">（期待度高）</span></td></tr>
+            <tr><td>スロー→高速点滅</td><td>通常B以上示唆 <span class="hint">（期待度高）</span></td></tr>
+            <tr><td>同時点滅</td><td>通常B以上確定</td></tr>
+            <tr><td>通常点滅から同時点滅</td><td>通常B以上確定</td></tr>
+            <tr><td>花と葉っぱ交互点滅</td><td>通常B以上確定</td></tr>
+            <tr><td>全体メラメラ点滅</td><td>天国期待度アップ</td></tr>
+            <tr><td>花だけメラメラ点滅</td><td>天国期待度アップ</td></tr>
+            <tr><td>337拍子</td><td>天国以上示唆</td></tr>
+            <tr><td>右のみ点滅</td><td>天国以上確定</td></tr>
+            <tr><td>点滅時パネル消灯</td><td>天国以上確定</td></tr>
+            <tr><td>カラフル点滅</td><td>天国以上確定</td></tr>
+            <tr><td>左のみ点滅</td><td>ドキドキ以上確定</td></tr>
+            <tr><td>リバースストリーム点滅</td><td>ドキドキ以上確定</td></tr>
+            <tr><td>通常点滅＋ドキドキランプ点灯</td><td>超ドキドキ確定</td></tr>
+            <tr><td>しだれ柳</td><td>超ドキドキ確定</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <h2 style="margin-top:14px">分かりづらい点灯パターンの特徴</h2>
+      <div class="hibi-wrap">
+        <table class="hibi-table">
+          <thead><tr><th>点灯パターン</th><th>特徴</th></tr></thead>
+          <tbody>
+            <tr><td>ブリッジ点滅</td><td>左から右、右から左へ光が交互に流れる</td></tr>
+            <tr><td>ストリーム点滅</td><td>左右のハイビスカスそれぞれ、左から右へゆらゆらと光が揺れる</td></tr>
+            <tr><td>カラフル点滅</td><td>左右のハイビスカスそれぞれ、ハイビスカスの中を回るように色が流れる</td></tr>
+            <tr><td>リバースストリーム点滅</td><td>ストリーム点滅の逆パターン。右から左へゆらゆらと光が揺れる</td></tr>
+            <tr><td>しだれ柳</td><td>左右のハイビスカスそれぞれ、一瞬点滅後に光が上から下へ流れる</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="hibi-note" style="margin-top:8px">参考：<a href="https://nana-press.com/kaiseki/machine/478/12854/" target="_blank" rel="noopener noreferrer" style="color:#8fc7ff">なな徹「沖ドキ！GOLD ハイビスカスランプの光り方」</a></p>
+    </div>
+  </details>
+</div>
+
+<div class="card" id="change-log">
+  <details class="memo-details">
+    <summary aria-controls="change-log-content"><h2>更新履歴 <span class="version-label">ver.38</span><span class="update-time">2026年11月8日</span></h2><span class="memo-arrow" aria-hidden="true">▼</span></summary>
+    <div class="memo-content" id="change-log-content">
+  <ul class="small" style="padding-left:20px;line-height:1.7">
+    <li>UIデザインを直近の整った表示（キング／ウイング切替ボタン等）に完全に復旧。</li>
+    <li>2回目以降の「累計通常G」の計算ロジック（前回の区間総G ＋ 今回の初当たりG）を維持。</li>
+  </ul>
+    </div>
+  </details>
+</div>
+
+</body>
+</html>
